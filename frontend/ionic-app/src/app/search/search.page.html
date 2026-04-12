@@ -1,0 +1,33 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Search</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-searchbar
+    [(ngModel)]="query"
+    (ionInput)="filter()"
+    placeholder="name, tag, size..."
+    debounce="200">
+  </ion-searchbar>
+
+  <ion-list *ngIf="results.length > 0">
+    <ion-item *ngFor="let item of results">
+      <ion-thumbnail slot="start" *ngIf="item.photo_url">
+        <img [src]="item.photo_url" />
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{ item.name }}</h2>
+        <p *ngIf="item.dimension_raw">📏 {{ item.dimension_raw }}</p>
+        <div>
+          <ion-badge *ngFor="let tag of item.tags" color="primary" style="margin-right: 4px;">{{ tag }}</ion-badge>
+        </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-padding ion-text-center" *ngIf="results.length === 0 && query">
+    <p>No results for "{{ query }}"</p>
+  </div>
+</ion-content>
