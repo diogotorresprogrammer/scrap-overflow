@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify, abort
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 from ..extensions import db
 from ..models import Item, LumberItem, MetalItem, FurnitureItem, ApplianceItem
 
 items_bp = Blueprint('items', __name__, url_prefix='/api/items')
 
-# Maps item_type string → model class
 ITEM_TYPE_MAP = {
     'lumber':    LumberItem,
     'metal':     MetalItem,
@@ -13,7 +14,6 @@ ITEM_TYPE_MAP = {
     'item':      Item,
 }
 
-# Fields accepted per subclass on create/update
 SUBCLASS_FIELDS = {
     'lumber':    ['species', 'length', 'width', 'thickness', 'grade', 'is_treated'],
     'metal':     ['metal_type', 'profile', 'length', 'width', 'thickness', 'alloy'],
@@ -36,31 +36,26 @@ def _apply_fields(instance, data, fields):
             setattr(instance, field, data[field])
 
 
-# ---------------------------------------------------------------------------
-# Collection
-# ---------------------------------------------------------------------------
-
 @items_bp.route('', methods=['GET'])
+@jwt_required()
 def list_items():
+    user_id = get_jwt_identity()
     item_type = request.args.get('type')
-    user_id = request.args.get('user_id')
 
-    query = Item.query
-
+    query = Item.query.filter(Item.user_id == user_id)
     if item_type:
         if item_type not in ITEM_TYPE_MAP:
             abort(400, description=f"Unknown item_type '{item_type}'")
         query = query.filter(Item.item_type == item_type)
-
-    if user_id:
-        query = query.filter(Item.user_id == user_id)
 
     items = query.order_by(Item.created_at.desc()).all()
     return jsonify([i.to_dict() for i in items])
 
 
 @items_bp.route('', methods=['POST'])
+@jwt_required()
 def create_item():
+    user_id = get_jwt_identity()
     data = request.get_json()
 
     item_type = data.get('item_type', 'item')
@@ -68,7 +63,7 @@ def create_item():
         abort(400, description=f"Unknown item_type '{item_type}'")
 
     cls = ITEM_TYPE_MAP[item_type]
-    item = cls(item_type=item_type, user_id=data['user_id'], name=data['name'])
+    item = cls(item_type=item_type, user_id=user_id, name=data['name'])
 
     _apply_fields(item, data, BASE_FIELDS)
     _apply_fields(item, data, SUBCLASS_FIELDS[item_type])
@@ -78,21 +73,25 @@ def create_item():
     return jsonify(item.to_dict()), 201
 
 
-# ---------------------------------------------------------------------------
-# Single item
-# ---------------------------------------------------------------------------
-
 @items_bp.route('/<uuid:item_id>', methods=['GET'])
+@jwt_required()
 def get_item(item_id):
+    user_id = get_jwt_identity()
     item = db.get_or_404(Item, item_id)
+    if str(item.user_id) != user_id:
+        abort(403)
     return jsonify(item.to_dict())
 
 
 @items_bp.route('/<uuid:item_id>', methods=['PATCH'])
+@jwt_required()
 def update_item(item_id):
+    user_id = get_jwt_identity()
     item = db.get_or_404(Item, item_id)
-    data = request.get_json()
+    if str(item.user_id) != user_id:
+        abort(403)
 
+    data = request.get_json()
     _apply_fields(item, data, BASE_FIELDS)
     _apply_fields(item, data, SUBCLASS_FIELDS.get(item.item_type, []))
 
@@ -101,8 +100,12 @@ def update_item(item_id):
 
 
 @items_bp.route('/<uuid:item_id>', methods=['DELETE'])
+@jwt_required()
 def delete_item(item_id):
+    user_id = get_jwt_identity()
     item = db.get_or_404(Item, item_id)
+    if str(item.user_id) != user_id:
+        abort(403)
     db.session.delete(item)
     db.session.commit()
     return '', 204

@@ -1,13 +1,28 @@
 import { Component, OnInit } from '@angular/core';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, NavController, ToastController } from '@ionic/angular';
+import {
+  IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton,
+  IonIcon, IonSpinner, IonContent, IonList, IonItem, IonLabel, IonBadge,
+  IonInput, IonTextarea, IonSelect, IonSelectOption, IonItemDivider,
+  IonToggle, IonNote,
+  AlertController, NavController, ToastController,
+} from '@ionic/angular/standalone';
 import { ApiService, ScrapItem } from '../services/api.service';
 
 @Component({
   selector: 'app-item-detail',
   templateUrl: 'item-detail.page.html',
   styleUrls: ['item-detail.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    FormsModule, DatePipe, DecimalPipe,
+    IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton,
+    IonIcon, IonSpinner, IonContent, IonList, IonItem, IonLabel, IonBadge,
+    IonInput, IonTextarea, IonSelect, IonSelectOption, IonItemDivider,
+    IonToggle, IonNote,
+  ],
 })
 export class ItemDetailPage implements OnInit {
   item: ScrapItem | null = null;

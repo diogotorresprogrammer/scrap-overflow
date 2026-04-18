@@ -1,15 +1,27 @@
 import { Component } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
-import { NavController, ToastController } from '@ionic/angular';
+import {
+  IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel,
+  IonSelect, IonSelectOption, IonInput, IonTextarea, IonItemDivider,
+  IonToggle, IonButton, IonIcon, IonSpinner,
+  NavController, ToastController,
+} from '@ionic/angular/standalone';
 import { ApiService, ItemType, ScrapItem } from '../services/api.service';
-import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-add',
   templateUrl: 'add.page.html',
   styleUrls: ['add.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    FormsModule, DecimalPipe,
+    IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel,
+    IonSelect, IonSelectOption, IonInput, IonTextarea, IonItemDivider,
+    IonToggle, IonButton, IonIcon, IonSpinner,
+  ],
 })
 export class AddPage {
   item: Partial<ScrapItem> = { item_type: 'lumber', dimension_unit: 'mm' };
@@ -25,7 +37,6 @@ export class AddPage {
 
   constructor(
     private api: ApiService,
-    private user: UserService,
     private nav: NavController,
     private toast: ToastController,
   ) {}
@@ -48,21 +59,10 @@ export class AddPage {
     this.item.location_lng = pos.coords.longitude;
   }
 
-  async save() {
+  save() {
     if (!this.item.name) return;
-
-    const userId = this.user.userId;
-    if (!userId) {
-      const t = await this.toast.create({
-        message: 'No user set. Paste your user ID in the Inventory settings.',
-        duration: 3000, color: 'danger',
-      });
-      await t.present();
-      return;
-    }
-
     this.saving = true;
-    this.api.createItem({ ...this.item, user_id: userId }).subscribe({
+    this.api.createItem(this.item).subscribe({
       next: () => {
         this.saving = false;
         this.item = { item_type: 'lumber', dimension_unit: 'mm' };

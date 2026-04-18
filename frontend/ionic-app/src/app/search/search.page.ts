@@ -1,11 +1,21 @@
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar,
+  IonList, IonItem, IonThumbnail, IonLabel, IonBadge,
+} from '@ionic/angular/standalone';
 import { ApiService, ScrapItem } from '../services/api.service';
 
 @Component({
   selector: 'app-search',
   templateUrl: 'search.page.html',
   styleUrls: ['search.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    FormsModule,
+    IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar,
+    IonList, IonItem, IonThumbnail, IonLabel, IonBadge,
+  ],
 })
 export class SearchPage {
   query = '';

@@ -1,14 +1,24 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, ToastController } from '@ionic/angular';
+import {
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
+  IonContent, IonSpinner, IonList, IonItemSliding, IonItem, IonThumbnail,
+  IonLabel, IonBadge, IonItemOptions, IonItemOption,
+  AlertController, ToastController,
+} from '@ionic/angular/standalone';
 import { ApiService, ScrapItem } from '../services/api.service';
-import { UserService } from '../services/user.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-inventory',
   templateUrl: 'inventory.page.html',
   styleUrls: ['inventory.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
+    IonContent, IonSpinner, IonList, IonItemSliding, IonItem, IonThumbnail,
+    IonLabel, IonBadge, IonItemOptions, IonItemOption,
+  ],
 })
 export class InventoryPage {
   items: ScrapItem[] = [];
@@ -16,7 +26,7 @@ export class InventoryPage {
 
   constructor(
     private api: ApiService,
-    private user: UserService,
+    private auth: AuthService,
     private router: Router,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
@@ -28,7 +38,7 @@ export class InventoryPage {
 
   load() {
     this.loading = true;
-    this.api.getItems({ user_id: this.user.userId ?? undefined }).subscribe({
+    this.api.getItems().subscribe({
       next: (items) => { this.items = items; this.loading = false; },
       error: () => { this.loading = false; },
     });
@@ -61,19 +71,12 @@ export class InventoryPage {
     await alert.present();
   }
 
-  async promptUserId() {
+  async confirmLogout() {
     const alert = await this.alertCtrl.create({
-      header: 'Set user ID',
-      message: 'Paste the UUID from when you created your user.',
-      inputs: [{ name: 'uid', placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', value: this.user.userId ?? '' }],
+      header: 'Sign out?',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Save',
-          handler: (d) => {
-            if (d.uid?.trim()) { this.user.set(d.uid.trim()); this.load(); }
-          },
-        },
+        { text: 'Sign out', role: 'destructive', handler: () => this.auth.logout() },
       ],
     });
     await alert.present();

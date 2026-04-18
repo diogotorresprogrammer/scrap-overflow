@@ -1,0 +1,84 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/projects"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ project?.name ?? 'Project' }}</ion-title>
+    <ion-buttons slot="end">
+      @if (!editing) {
+        <ion-button (click)="startEdit()">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button color="danger" (click)="confirmDelete()">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      }
+      @if (editing) {
+        <ion-button (click)="cancelEdit()">Cancel</ion-button>
+        <ion-button (click)="save()" [disabled]="saving" strong>
+          @if (saving) { <ion-spinner name="crescent"></ion-spinner> }
+          @if (!saving) { Save }
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  @if (loading) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  }
+
+  @if (!loading && project) {
+    <ion-list>
+
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        @if (editing) {
+          <ion-input [(ngModel)]="draft.name"></ion-input>
+        } @else {
+          <p class="ion-padding-top">{{ project.name }}</p>
+        }
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Description</ion-label>
+        @if (editing) {
+          <ion-textarea [(ngModel)]="draft.description" rows="3"></ion-textarea>
+        } @else {
+          <p class="ion-padding-top">{{ project.description || '—' }}</p>
+        }
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Status</ion-label>
+        @if (editing) {
+          <ion-select [(ngModel)]="draft.status">
+            @for (s of statuses; track s.value) {
+              <ion-select-option [value]="s.value">{{ s.label }}</ion-select-option>
+            }
+          </ion-select>
+        } @else {
+          <ion-badge [color]="statusColor(project.status)" class="ion-margin-top">{{ project.status }}</ion-badge>
+        }
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Created</ion-label>
+        <ion-note slot="end">{{ project.created_at | date:'mediumDate' }}</ion-note>
+      </ion-item>
+
+      @if (project.completed_at) {
+        <ion-item>
+          <ion-label>Completed</ion-label>
+          <ion-note slot="end">{{ project.completed_at | date:'mediumDate' }}</ion-note>
+        </ion-item>
+      }
+
+    </ion-list>
+  }
+
+</ion-content>

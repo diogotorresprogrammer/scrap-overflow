@@ -6,3 +6,4 @@ rq==2.7.0
 redis==7.2.0
 psycopg2-binary
 alembic
+flask-jwt-extended==4.7.1
