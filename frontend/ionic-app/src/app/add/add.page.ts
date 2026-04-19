@@ -5,11 +5,16 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel,
-  IonSelect, IonSelectOption, IonInput, IonTextarea, IonItemDivider,
-  IonToggle, IonButton, IonIcon, IonSpinner,
+  IonSelect, IonSelectOption, IonInput, IonTextarea,
+  IonButton, IonIcon, IonSpinner,
   NavController, ToastController,
 } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService, ItemType, ScrapItem } from '../services/api.service';
+import { AddLumberComponent } from './lumber/add-lumber.component';
+import { AddMetalComponent } from './metal/add-metal.component';
+import { AddFurnitureComponent } from './furniture/add-furniture.component';
+import { AddApplianceComponent } from './appliance/add-appliance.component';
 
 @Component({
   selector: 'app-add',
@@ -17,28 +22,30 @@ import { ApiService, ItemType, ScrapItem } from '../services/api.service';
   styleUrls: ['add.page.scss'],
   standalone: true,
   imports: [
-    FormsModule, DecimalPipe,
+    FormsModule, DecimalPipe, TranslatePipe,
     IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel,
-    IonSelect, IonSelectOption, IonInput, IonTextarea, IonItemDivider,
-    IonToggle, IonButton, IonIcon, IonSpinner,
+    IonSelect, IonSelectOption, IonInput, IonTextarea,
+    IonButton, IonIcon, IonSpinner,
+    AddLumberComponent, AddMetalComponent, AddFurnitureComponent, AddApplianceComponent,
   ],
 })
 export class AddPage {
-  item: Partial<ScrapItem> = { item_type: 'lumber', dimension_unit: 'mm' };
+  item: Partial<ScrapItem> = { item_type: 'lumber', dimension_unit: 'cm' };
   photoUrl: string | undefined;
   saving = false;
 
-  readonly itemTypes: { value: ItemType; label: string }[] = [
-    { value: 'lumber',    label: 'Lumber' },
-    { value: 'metal',     label: 'Metal' },
-    { value: 'furniture', label: 'Furniture' },
-    { value: 'appliance', label: 'Appliance' },
+  readonly itemTypes: { value: ItemType }[] = [
+    { value: 'lumber' },
+    { value: 'metal' },
+    { value: 'furniture' },
+    { value: 'appliance' },
   ];
 
   constructor(
     private api: ApiService,
     private nav: NavController,
     private toast: ToastController,
+    private translate: TranslateService,
   ) {}
 
   get type(): ItemType { return this.item.item_type ?? 'lumber'; }
@@ -65,13 +72,17 @@ export class AddPage {
     this.api.createItem(this.item).subscribe({
       next: () => {
         this.saving = false;
-        this.item = { item_type: 'lumber', dimension_unit: 'mm' };
+        this.item = { item_type: 'lumber', dimension_unit: 'cm' };
         this.photoUrl = undefined;
         this.nav.navigateRoot('/tabs/inventory');
       },
       error: async () => {
         this.saving = false;
-        const t = await this.toast.create({ message: 'Failed to save item.', duration: 2000, color: 'danger' });
+        const t = await this.toast.create({
+          message: this.translate.instant('add.failed-to-save'),
+          duration: 2000,
+          color: 'danger',
+        });
         await t.present();
       },
     });

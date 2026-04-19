@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/inventory"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ item?.name ?? 'Item' }}</ion-title>
+    <ion-title>{{ item?.name ?? ('item-detail.title' | translate) }}</ion-title>
     <ion-buttons slot="end">
       @if (!editing) {
         <ion-button (click)="startEdit()">
@@ -14,10 +14,10 @@
         </ion-button>
       }
       @if (editing) {
-        <ion-button (click)="cancelEdit()">Cancel</ion-button>
+        <ion-button (click)="cancelEdit()">{{ 'common.cancel' | translate }}</ion-button>
         <ion-button (click)="save()" [disabled]="saving" strong>
           @if (saving) { <ion-spinner name="crescent"></ion-spinner> }
-          @if (!saving) { Save }
+          @if (!saving) { {{ 'common.save' | translate }} }
         </ion-button>
       }
     </ion-buttons>
@@ -34,22 +34,21 @@
 
   @if (!loading && item) {
 
-    <!-- Photo -->
     @if (item.photo_url) {
       <img [src]="item.photo_url" style="width:100%; max-height: 240px; object-fit: cover;" />
     }
 
     <ion-list>
 
-      <!-- Type badge -->
       <ion-item>
-        <ion-label>Type</ion-label>
-        <ion-badge slot="end" [color]="typeColor(item.item_type)">{{ item.item_type }}</ion-badge>
+        <ion-label>{{ 'item.type' | translate }}</ion-label>
+        <ion-badge slot="end" [color]="typeColor(item.item_type)">
+          {{ ('item-type.' + item.item_type) | translate }}
+        </ion-badge>
       </ion-item>
 
-      <!-- Base fields -->
       <ion-item>
-        <ion-label position="stacked">Name</ion-label>
+        <ion-label position="stacked">{{ 'item.name' | translate }}</ion-label>
         @if (editing) {
           <ion-input [(ngModel)]="draft.name"></ion-input>
         } @else {
@@ -58,7 +57,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Description</ion-label>
+        <ion-label position="stacked">{{ 'common.description' | translate }}</ion-label>
         @if (editing) {
           <ion-textarea [(ngModel)]="draft.description" rows="2"></ion-textarea>
         } @else {
@@ -67,172 +66,49 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Condition</ion-label>
+        <ion-label position="stacked">{{ 'common.condition' | translate }}</ion-label>
         @if (editing) {
           <ion-select [(ngModel)]="draft.condition">
-            <ion-select-option value="excellent">Excellent</ion-select-option>
-            <ion-select-option value="good">Good</ion-select-option>
-            <ion-select-option value="fair">Fair</ion-select-option>
-            <ion-select-option value="poor">Poor</ion-select-option>
+            <ion-select-option value="excellent">{{ 'condition.excellent' | translate }}</ion-select-option>
+            <ion-select-option value="good">{{ 'condition.good' | translate }}</ion-select-option>
+            <ion-select-option value="fair">{{ 'condition.fair' | translate }}</ion-select-option>
+            <ion-select-option value="poor">{{ 'condition.poor' | translate }}</ion-select-option>
           </ion-select>
         } @else {
           <p class="ion-padding-top">{{ item.condition || '—' }}</p>
         }
       </ion-item>
 
-      <!-- Lumber -->
       @if (item.item_type === 'lumber') {
-        <ion-item-divider><ion-label>Lumber</ion-label></ion-item-divider>
-        <ion-item>
-          <ion-label position="stacked">Species</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.species"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.species || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Dimensions ({{ item.dimension_unit }})</ion-label>
-          @if (editing) {
-            <div style="display:flex; gap:8px; padding-top:8px;">
-              <ion-input [(ngModel)]="draft.length" type="number" placeholder="L" style="flex:1"></ion-input>
-              <ion-input [(ngModel)]="draft.width" type="number" placeholder="W" style="flex:1"></ion-input>
-              <ion-input [(ngModel)]="draft.thickness" type="number" placeholder="T" style="flex:1"></ion-input>
-            </div>
-          } @else {
-            <p class="ion-padding-top">{{ item.length }} × {{ item.width }} × {{ item.thickness }}</p>
-          }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Grade</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.grade"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.grade || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label>Pressure treated</ion-label>
-          @if (editing) { <ion-toggle [(ngModel)]="draft.is_treated" slot="end"></ion-toggle> }
-          @else { <ion-note slot="end">{{ item.is_treated ? 'Yes' : 'No' }}</ion-note> }
-        </ion-item>
+        <app-detail-lumber [item]="item" [draft]="draft" [editing]="editing"></app-detail-lumber>
       }
-
-      <!-- Metal -->
       @if (item.item_type === 'metal') {
-        <ion-item-divider><ion-label>Metal</ion-label></ion-item-divider>
-        <ion-item>
-          <ion-label position="stacked">Metal type</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.metal_type"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.metal_type || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Profile</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.profile"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.profile || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Dimensions ({{ item.dimension_unit }})</ion-label>
-          @if (editing) {
-            <div style="display:flex; gap:8px; padding-top:8px;">
-              <ion-input [(ngModel)]="draft.length" type="number" placeholder="L" style="flex:1"></ion-input>
-              <ion-input [(ngModel)]="draft.width" type="number" placeholder="W" style="flex:1"></ion-input>
-              <ion-input [(ngModel)]="draft.thickness" type="number" placeholder="T" style="flex:1"></ion-input>
-            </div>
-          } @else {
-            <p class="ion-padding-top">{{ item.length }} × {{ item.width }} × {{ item.thickness }}</p>
-          }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Alloy</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.alloy"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.alloy || '—' }}</p> }
-        </ion-item>
+        <app-detail-metal [item]="item" [draft]="draft" [editing]="editing"></app-detail-metal>
       }
-
-      <!-- Furniture -->
       @if (item.item_type === 'furniture') {
-        <ion-item-divider><ion-label>Furniture</ion-label></ion-item-divider>
-        <ion-item>
-          <ion-label position="stacked">Furniture type</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.furniture_type"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.furniture_type || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Material</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.material"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.material || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Style</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.style"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.style || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label>Hardware included</ion-label>
-          @if (editing) { <ion-toggle [(ngModel)]="draft.has_hardware" slot="end"></ion-toggle> }
-          @else { <ion-note slot="end">{{ item.has_hardware ? 'Yes' : 'No' }}</ion-note> }
-        </ion-item>
+        <app-detail-furniture [item]="item" [draft]="draft" [editing]="editing"></app-detail-furniture>
       }
-
-      <!-- Appliance -->
       @if (item.item_type === 'appliance') {
-        <ion-item-divider><ion-label>Appliance</ion-label></ion-item-divider>
-        <ion-item>
-          <ion-label position="stacked">Appliance type</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.appliance_type"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.appliance_type || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Brand</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.brand"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.brand || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Model</ion-label>
-          @if (editing) { <ion-input [(ngModel)]="draft.model_number"></ion-input> }
-          @else { <p class="ion-padding-top">{{ item.model_number || '—' }}</p> }
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Working condition</ion-label>
-          @if (editing) {
-            <ion-select [(ngModel)]="draft.working_condition">
-              <ion-select-option value="working">Working</ion-select-option>
-              <ion-select-option value="unknown">Unknown</ion-select-option>
-              <ion-select-option value="for-parts">For parts</ion-select-option>
-            </ion-select>
-          } @else {
-            <p class="ion-padding-top">{{ item.working_condition || '—' }}</p>
-          }
-        </ion-item>
-        <ion-item>
-          <ion-label>Voltage / Amperage</ion-label>
-          @if (editing) {
-            <div style="display:flex; gap:8px;">
-              <ion-select [(ngModel)]="draft.voltage" style="flex:1">
-                <ion-select-option [value]="110">110V</ion-select-option>
-                <ion-select-option [value]="220">220V</ion-select-option>
-              </ion-select>
-              <ion-input [(ngModel)]="draft.amperage" type="number" placeholder="A" style="flex:1"></ion-input>
-            </div>
-          } @else {
-            <ion-note slot="end">{{ item.voltage ? item.voltage + 'V' : '—' }} / {{ item.amperage ? item.amperage + 'A' : '—' }}</ion-note>
-          }
-        </ion-item>
+        <app-detail-appliance [item]="item" [draft]="draft" [editing]="editing"></app-detail-appliance>
       }
 
-      <!-- Status -->
-      <ion-item-divider><ion-label>Status</ion-label></ion-item-divider>
+      <ion-item-divider><ion-label>{{ 'common.status' | translate }}</ion-label></ion-item-divider>
       <ion-item>
-        <ion-label>Allocated</ion-label>
-        <ion-note slot="end">{{ item.allocated ? 'Yes' : 'No' }}</ion-note>
+        <ion-label>{{ 'item.allocated' | translate }}</ion-label>
+        <ion-note slot="end">{{ (item.allocated ? 'common.yes' : 'common.no') | translate }}</ion-note>
       </ion-item>
       <ion-item>
-        <ion-label>Consumed</ion-label>
-        <ion-note slot="end">{{ item.consumed ? 'Yes' : 'No' }}</ion-note>
+        <ion-label>{{ 'item.consumed' | translate }}</ion-label>
+        <ion-note slot="end">{{ (item.consumed ? 'common.yes' : 'common.no') | translate }}</ion-note>
       </ion-item>
       @if (item.location) {
         <ion-item>
-          <ion-label>Location</ion-label>
+          <ion-label>{{ 'common.location' | translate }}</ion-label>
           <ion-note slot="end">{{ item.location.lat | number:'1.4-4' }}, {{ item.location.lng | number:'1.4-4' }}</ion-note>
         </ion-item>
       }
       <ion-item>
-        <ion-label>Added</ion-label>
+        <ion-label>{{ 'item.added' | translate }}</ion-label>
         <ion-note slot="end">{{ item.created_at | date:'mediumDate' }}</ion-note>
       </ion-item>
 

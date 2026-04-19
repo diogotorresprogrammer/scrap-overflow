@@ -1,0 +1,17 @@
+.sort-bar {
+  --min-height: 44px;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  .page-info {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    min-width: 60px;
+    text-align: center;
+  }
+}

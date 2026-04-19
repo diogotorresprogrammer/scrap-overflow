@@ -1,0 +1,155 @@
+{
+  "tabs": {
+    "inventory": "Inventário",
+    "add": "Adicionar",
+    "search": "Pesquisar",
+    "projects": "Projetos"
+  },
+  "landing": {
+    "tagline": "Inventário para madeira recuperada, metal, mobiliário e eletrodomésticos.<br>Encontra o que tens. Usa o que encontras.",
+    "sign-in": "Entrar",
+    "create-account": "Criar conta",
+    "username": "Nome de utilizador",
+    "email": "Email",
+    "password": "Palavra-passe",
+    "username-placeholder": "o_teu_nome",
+    "email-placeholder": "tu@exemplo.com",
+    "password-placeholder": "••••••••",
+    "signing-in": "A entrar...",
+    "creating-account": "A criar conta...",
+    "error-invalid-credentials": "Email ou palavra-passe inválidos.",
+    "error-registration-failed": "Falha no registo."
+  },
+  "inventory": {
+    "title": "Inventário",
+    "empty": "Sem itens. Adiciona o teu primeiro material!",
+    "sign-out-confirm": "Terminar sessão?",
+    "item-deleted": "Item eliminado.",
+    "sort-by": "Ordenar por",
+    "sort-created-at": "Data de adição",
+    "sort-length": "Dimensões",
+    "sort-item-type": "Tipo",
+    "page-info": "{{page}} / {{pages}}"
+  },
+  "add": {
+    "title": "Adicionar Item",
+    "type": "Tipo",
+    "name": "Nome",
+    "name-placeholder": "ex: Prancha de carvalho",
+    "description-placeholder": "Onde foi encontrado, como é...",
+    "dimension-unit": "Unidade de dimensão",
+    "lumber-details": "Detalhes de madeira",
+    "metal-details": "Detalhes de metal",
+    "furniture-details": "Detalhes de mobiliário",
+    "appliance-details": "Detalhes de eletrodoméstico",
+    "take-photo": "Tirar Foto",
+    "tag-location": "Marcar Localização",
+    "save-item": "Guardar Item",
+    "failed-to-save": "Falha ao guardar item."
+  },
+  "search": {
+    "title": "Pesquisar",
+    "placeholder": "nome, etiqueta, tamanho...",
+    "no-results": "Sem resultados para \"{{query}}\""
+  },
+  "item-detail": {
+    "title": "Item",
+    "delete-confirm-header": "Eliminar item?",
+    "delete-confirm-message": "\"{{name}}\" será eliminado permanentemente.",
+    "saved": "Guardado.",
+    "deleted": "Item eliminado."
+  },
+  "projects": {
+    "title": "Projetos",
+    "empty": "Sem projetos. Toca em + para criar um.",
+    "new-project": "Novo projeto",
+    "project-name-placeholder": "Nome do projeto",
+    "description-optional-placeholder": "Descrição (opcional)",
+    "delete-confirm-header": "Eliminar projeto?",
+    "delete-confirm-message": "\"{{name}}\" será eliminado permanentemente.",
+    "deleted": "Projeto eliminado."
+  },
+  "project-detail": {
+    "title": "Projeto",
+    "created": "Criado",
+    "completed": "Concluído",
+    "saved": "Guardado."
+  },
+  "item": {
+    "type": "Tipo",
+    "name": "Nome",
+    "species": "Espécie",
+    "species-placeholder": "ex: carvalho, pinheiro, choupo",
+    "length": "Comprimento ({{unit}})",
+    "width": "Largura ({{unit}})",
+    "thickness": "Espessura ({{unit}})",
+    "dimensions": "Dimensões ({{unit}})",
+    "grade": "Qualidade",
+    "grade-placeholder": "ex: #1, seleto, comum",
+    "pressure-treated": "Tratado sob pressão",
+    "metal-type": "Tipo de metal",
+    "metal-type-placeholder": "ex: aço, alumínio, cobre",
+    "profile": "Perfil",
+    "profile-placeholder": "ex: barra plana, tubo, ângulo, chapa",
+    "alloy": "Liga",
+    "alloy-placeholder": "ex: 6061, A36, 304",
+    "furniture-type": "Tipo de mobiliário",
+    "furniture-type-placeholder": "ex: cadeira, mesa, cómoda",
+    "material": "Material",
+    "material-placeholder": "ex: madeira maciça, metal, estofado",
+    "style": "Estilo",
+    "style-placeholder": "ex: industrial, rústico, mid-century",
+    "num-pieces": "Número de peças",
+    "hardware-included": "Hardware incluído",
+    "appliance-type": "Tipo de eletrodoméstico",
+    "appliance-type-placeholder": "ex: frigorífico, máquina de lavar, fogão",
+    "brand": "Marca",
+    "model-number": "Número de modelo",
+    "model": "Modelo",
+    "working-condition": "Estado de funcionamento",
+    "voltage": "Tensão",
+    "amperage": "Amperagem (A)",
+    "voltage-amperage": "Tensão / Amperagem",
+    "allocated": "Alocado",
+    "consumed": "Consumido",
+    "added": "Adicionado"
+  },
+  "item-type": {
+    "lumber": "Madeira",
+    "metal": "Metal",
+    "furniture": "Mobiliário",
+    "appliance": "Eletrodoméstico"
+  },
+  "condition": {
+    "excellent": "Excelente",
+    "good": "Bom",
+    "fair": "Razoável",
+    "poor": "Mau"
+  },
+  "working-condition": {
+    "working": "Funcional",
+    "unknown": "Desconhecido",
+    "for-parts": "Para peças"
+  },
+  "status": {
+    "planning": "Planeamento",
+    "in_progress": "Em progresso",
+    "completed": "Concluído",
+    "cancelled": "Cancelado"
+  },
+  "common": {
+    "description": "Descrição",
+    "condition": "Condição",
+    "status": "Estado",
+    "location": "Localização",
+    "select": "Selecionar...",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "A guardar...",
+    "create": "Criar",
+    "delete": "Eliminar",
+    "sign-out": "Terminar sessão",
+    "yes": "Sim",
+    "no": "Não"
+  }
+}

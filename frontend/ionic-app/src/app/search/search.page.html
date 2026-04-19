@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Search</ion-title>
+    <ion-title>{{ 'search.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -8,7 +8,7 @@
   <ion-searchbar
     [(ngModel)]="query"
     (ionInput)="filter()"
-    placeholder="name, tag, size..."
+    [placeholder]="'search.placeholder' | translate"
     debounce="200">
   </ion-searchbar>
 
@@ -39,7 +39,7 @@
 
   @if (results.length === 0 && query) {
     <div class="ion-padding ion-text-center">
-      <p>No results for "{{ query }}"</p>
+      <p>{{ 'search.no-results' | translate:{ query: query } }}</p>
     </div>
   }
 </ion-content>

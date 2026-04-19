@@ -1,0 +1,31 @@
+<ion-item-divider><ion-label>{{ 'add.lumber-details' | translate }}</ion-label></ion-item-divider>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.species' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.species" [placeholder]="'item.species-placeholder' | translate"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.length' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  <ion-input [(ngModel)]="item.length" type="number" placeholder="2400"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.width' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  <ion-input [(ngModel)]="item.width" type="number" placeholder="150"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.thickness' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  <ion-input [(ngModel)]="item.thickness" type="number" placeholder="25"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.grade' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.grade" [placeholder]="'item.grade-placeholder' | translate"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label>{{ 'item.pressure-treated' | translate }}</ion-label>
+  <ion-toggle [(ngModel)]="item.is_treated" slot="end"></ion-toggle>
+</ion-item>

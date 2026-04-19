@@ -6,6 +6,7 @@ import {
   IonItem, IonLabel, IonInput, IonButton,
   ToastController, LoadingController,
 } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -14,7 +15,7 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['landing.page.scss'],
   standalone: true,
   imports: [
-    FormsModule,
+    FormsModule, TranslatePipe,
     IonContent, IonIcon, IonCard, IonSegment, IonSegmentButton,
     IonItem, IonLabel, IonInput, IonButton,
   ],
@@ -31,10 +32,13 @@ export class LandingPage {
     private router: Router,
     private toast: ToastController,
     private loading: LoadingController,
+    private translate: TranslateService,
   ) {}
 
   async submit() {
-    const loader = await this.loading.create({ message: this.mode === 'login' ? 'Signing in...' : 'Creating account...' });
+    const loader = await this.loading.create({
+      message: this.translate.instant(this.mode === 'login' ? 'landing.signing-in' : 'landing.creating-account'),
+    });
     await loader.present();
 
     const obs = this.mode === 'login'
@@ -48,7 +52,10 @@ export class LandingPage {
       },
       error: async (err) => {
         await loader.dismiss();
-        const msg = err.error?.description ?? (this.mode === 'login' ? 'Invalid email or password.' : 'Registration failed.');
+        const key = err.error?.description
+          ? null
+          : (this.mode === 'login' ? 'landing.error-invalid-credentials' : 'landing.error-registration-failed');
+        const msg = err.error?.description ?? this.translate.instant(key!);
         const t = await this.toast.create({ message: msg, duration: 3000, color: 'danger' });
         await t.present();
       },

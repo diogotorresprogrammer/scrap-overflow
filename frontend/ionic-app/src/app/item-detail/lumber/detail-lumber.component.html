@@ -1,0 +1,32 @@
+<ion-item-divider><ion-label>{{ 'item-type.lumber' | translate }}</ion-label></ion-item-divider>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.species' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.species"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.species || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.dimensions' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  @if (editing) {
+    <div style="display:flex; gap:8px; padding-top:8px;">
+      <ion-input [(ngModel)]="draft.length" type="number" placeholder="L" style="flex:1"></ion-input>
+      <ion-input [(ngModel)]="draft.width" type="number" placeholder="W" style="flex:1"></ion-input>
+      <ion-input [(ngModel)]="draft.thickness" type="number" placeholder="T" style="flex:1"></ion-input>
+    </div>
+  } @else {
+    <p class="ion-padding-top">{{ item.length }} × {{ item.width }} × {{ item.thickness }}</p>
+  }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.grade' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.grade"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.grade || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label>{{ 'item.pressure-treated' | translate }}</ion-label>
+  @if (editing) { <ion-toggle [(ngModel)]="draft.is_treated" slot="end"></ion-toggle> }
+  @else { <ion-note slot="end">{{ (item.is_treated ? 'common.yes' : 'common.no') | translate }}</ion-note> }
+</ion-item>

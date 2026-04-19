@@ -6,10 +6,15 @@ import {
   IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton,
   IonIcon, IonSpinner, IonContent, IonList, IonItem, IonLabel, IonBadge,
   IonInput, IonTextarea, IonSelect, IonSelectOption, IonItemDivider,
-  IonToggle, IonNote,
+  IonNote,
   AlertController, NavController, ToastController,
 } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService, ScrapItem } from '../services/api.service';
+import { DetailLumberComponent } from './lumber/detail-lumber.component';
+import { DetailMetalComponent } from './metal/detail-metal.component';
+import { DetailFurnitureComponent } from './furniture/detail-furniture.component';
+import { DetailApplianceComponent } from './appliance/detail-appliance.component';
 
 @Component({
   selector: 'app-item-detail',
@@ -17,11 +22,12 @@ import { ApiService, ScrapItem } from '../services/api.service';
   styleUrls: ['item-detail.page.scss'],
   standalone: true,
   imports: [
-    FormsModule, DatePipe, DecimalPipe,
+    FormsModule, DatePipe, DecimalPipe, TranslatePipe,
     IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton,
     IonIcon, IonSpinner, IonContent, IonList, IonItem, IonLabel, IonBadge,
     IonInput, IonTextarea, IonSelect, IonSelectOption, IonItemDivider,
-    IonToggle, IonNote,
+    IonNote,
+    DetailLumberComponent, DetailMetalComponent, DetailFurnitureComponent, DetailApplianceComponent,
   ],
 })
 export class ItemDetailPage implements OnInit {
@@ -37,6 +43,7 @@ export class ItemDetailPage implements OnInit {
     private nav: NavController,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -64,7 +71,10 @@ export class ItemDetailPage implements OnInit {
         this.item = updated;
         this.editing = false;
         this.saving = false;
-        const t = await this.toastCtrl.create({ message: 'Saved.', duration: 1500 });
+        const t = await this.toastCtrl.create({
+          message: this.translate.instant('item-detail.saved'),
+          duration: 1500,
+        });
         await t.present();
       },
       error: () => { this.saving = false; },
@@ -73,11 +83,11 @@ export class ItemDetailPage implements OnInit {
 
   async confirmDelete() {
     const alert = await this.alertCtrl.create({
-      header: 'Delete item?',
-      message: `"${this.item!.name}" will be permanently removed.`,
+      header: this.translate.instant('item-detail.delete-confirm-header'),
+      message: this.translate.instant('item-detail.delete-confirm-message', { name: this.item!.name }),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive', handler: () => this.delete() },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('common.delete'), role: 'destructive', handler: () => this.delete() },
       ],
     });
     await alert.present();

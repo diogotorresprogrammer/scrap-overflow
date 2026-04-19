@@ -1,0 +1,155 @@
+{
+  "tabs": {
+    "inventory": "Inventory",
+    "add": "Add",
+    "search": "Search",
+    "projects": "Projects"
+  },
+  "landing": {
+    "tagline": "Inventory for salvaged lumber, metal, furniture &amp; appliances.<br>Find what you have. Use what you find.",
+    "sign-in": "Sign in",
+    "create-account": "Create account",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "username-placeholder": "your_name",
+    "email-placeholder": "you@example.com",
+    "password-placeholder": "••••••••",
+    "signing-in": "Signing in...",
+    "creating-account": "Creating account...",
+    "error-invalid-credentials": "Invalid email or password.",
+    "error-registration-failed": "Registration failed."
+  },
+  "inventory": {
+    "title": "Inventory",
+    "empty": "No items yet. Add your first scrap!",
+    "sign-out-confirm": "Sign out?",
+    "item-deleted": "Item deleted.",
+    "sort-by": "Sort by",
+    "sort-created-at": "Date added",
+    "sort-length": "Dimensions",
+    "sort-item-type": "Type",
+    "page-info": "{{page}} / {{pages}}"
+  },
+  "add": {
+    "title": "Add Item",
+    "type": "Type",
+    "name": "Name",
+    "name-placeholder": "e.g. Oak plank",
+    "description-placeholder": "Where found, what it looks like...",
+    "dimension-unit": "Dimension unit",
+    "lumber-details": "Lumber details",
+    "metal-details": "Metal details",
+    "furniture-details": "Furniture details",
+    "appliance-details": "Appliance details",
+    "take-photo": "Take Photo",
+    "tag-location": "Tag Location",
+    "save-item": "Save Item",
+    "failed-to-save": "Failed to save item."
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "name, tag, size...",
+    "no-results": "No results for \"{{query}}\""
+  },
+  "item-detail": {
+    "title": "Item",
+    "delete-confirm-header": "Delete item?",
+    "delete-confirm-message": "\"{{name}}\" will be permanently removed.",
+    "saved": "Saved.",
+    "deleted": "Item deleted."
+  },
+  "projects": {
+    "title": "Projects",
+    "empty": "No projects yet. Tap + to create one.",
+    "new-project": "New project",
+    "project-name-placeholder": "Project name",
+    "description-optional-placeholder": "Description (optional)",
+    "delete-confirm-header": "Delete project?",
+    "delete-confirm-message": "\"{{name}}\" will be permanently removed.",
+    "deleted": "Project deleted."
+  },
+  "project-detail": {
+    "title": "Project",
+    "created": "Created",
+    "completed": "Completed",
+    "saved": "Saved."
+  },
+  "item": {
+    "type": "Type",
+    "name": "Name",
+    "species": "Species",
+    "species-placeholder": "e.g. oak, pine, poplar",
+    "length": "Length ({{unit}})",
+    "width": "Width ({{unit}})",
+    "thickness": "Thickness ({{unit}})",
+    "dimensions": "Dimensions ({{unit}})",
+    "grade": "Grade",
+    "grade-placeholder": "e.g. #1, select, common",
+    "pressure-treated": "Pressure treated",
+    "metal-type": "Metal type",
+    "metal-type-placeholder": "e.g. steel, aluminum, copper",
+    "profile": "Profile",
+    "profile-placeholder": "e.g. flat bar, tube, angle, sheet",
+    "alloy": "Alloy",
+    "alloy-placeholder": "e.g. 6061, A36, 304",
+    "furniture-type": "Furniture type",
+    "furniture-type-placeholder": "e.g. chair, table, dresser",
+    "material": "Material",
+    "material-placeholder": "e.g. solid wood, metal, upholstered",
+    "style": "Style",
+    "style-placeholder": "e.g. industrial, rustic, mid-century",
+    "num-pieces": "Number of pieces",
+    "hardware-included": "Hardware included",
+    "appliance-type": "Appliance type",
+    "appliance-type-placeholder": "e.g. fridge, washer, stove",
+    "brand": "Brand",
+    "model-number": "Model number",
+    "model": "Model",
+    "working-condition": "Working condition",
+    "voltage": "Voltage",
+    "amperage": "Amperage (A)",
+    "voltage-amperage": "Voltage / Amperage",
+    "allocated": "Allocated",
+    "consumed": "Consumed",
+    "added": "Added"
+  },
+  "item-type": {
+    "lumber": "Lumber",
+    "metal": "Metal",
+    "furniture": "Furniture",
+    "appliance": "Appliance"
+  },
+  "condition": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair",
+    "poor": "Poor"
+  },
+  "working-condition": {
+    "working": "Working",
+    "unknown": "Unknown",
+    "for-parts": "For parts"
+  },
+  "status": {
+    "planning": "Planning",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "common": {
+    "description": "Description",
+    "condition": "Condition",
+    "status": "Status",
+    "location": "Location",
+    "select": "Select...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "create": "Create",
+    "delete": "Delete",
+    "sign-out": "Sign out",
+    "yes": "Yes",
+    "no": "No"
+  }
+}

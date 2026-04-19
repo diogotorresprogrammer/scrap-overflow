@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Projects</ion-title>
+    <ion-title>{{ 'projects.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="promptCreate()">
         <ion-icon slot="icon-only" name="add-outline"></ion-icon>
@@ -12,7 +12,7 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Projects</ion-title>
+      <ion-title size="large">{{ 'projects.title' | translate }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -31,10 +31,12 @@
               <h2>{{ p.name }}</h2>
               <p>{{ p.description }}</p>
               @if (p.completed_at) {
-                <p>Completed {{ p.completed_at | date:'mediumDate' }}</p>
+                <p>{{ 'project-detail.completed' | translate }} {{ p.completed_at | date:'mediumDate' }}</p>
               }
             </ion-label>
-            <ion-badge slot="end" [color]="statusColor(p.status)">{{ p.status }}</ion-badge>
+            <ion-badge slot="end" [color]="statusColor(p.status)">
+              {{ ('status.' + p.status) | translate }}
+            </ion-badge>
           </ion-item>
 
           <ion-item-options side="end">
@@ -50,7 +52,7 @@
   @if (!loading && projects.length === 0) {
     <div class="ion-padding ion-text-center">
       <ion-icon name="folder-open-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
-      <p>No projects yet. Tap + to create one.</p>
+      <p>{{ 'projects.empty' | translate }}</p>
     </div>
   }
 

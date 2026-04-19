@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/projects"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ project?.name ?? 'Project' }}</ion-title>
+    <ion-title>{{ project?.name ?? ('project-detail.title' | translate) }}</ion-title>
     <ion-buttons slot="end">
       @if (!editing) {
         <ion-button (click)="startEdit()">
@@ -14,10 +14,10 @@
         </ion-button>
       }
       @if (editing) {
-        <ion-button (click)="cancelEdit()">Cancel</ion-button>
+        <ion-button (click)="cancelEdit()">{{ 'common.cancel' | translate }}</ion-button>
         <ion-button (click)="save()" [disabled]="saving" strong>
           @if (saving) { <ion-spinner name="crescent"></ion-spinner> }
-          @if (!saving) { Save }
+          @if (!saving) { {{ 'common.save' | translate }} }
         </ion-button>
       }
     </ion-buttons>
@@ -36,7 +36,7 @@
     <ion-list>
 
       <ion-item>
-        <ion-label position="stacked">Name</ion-label>
+        <ion-label position="stacked">{{ 'item.name' | translate }}</ion-label>
         @if (editing) {
           <ion-input [(ngModel)]="draft.name"></ion-input>
         } @else {
@@ -45,7 +45,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Description</ion-label>
+        <ion-label position="stacked">{{ 'common.description' | translate }}</ion-label>
         @if (editing) {
           <ion-textarea [(ngModel)]="draft.description" rows="3"></ion-textarea>
         } @else {
@@ -54,26 +54,28 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Status</ion-label>
+        <ion-label position="stacked">{{ 'common.status' | translate }}</ion-label>
         @if (editing) {
           <ion-select [(ngModel)]="draft.status">
-            @for (s of statuses; track s.value) {
-              <ion-select-option [value]="s.value">{{ s.label }}</ion-select-option>
+            @for (s of statuses; track s) {
+              <ion-select-option [value]="s">{{ ('status.' + s) | translate }}</ion-select-option>
             }
           </ion-select>
         } @else {
-          <ion-badge [color]="statusColor(project.status)" class="ion-margin-top">{{ project.status }}</ion-badge>
+          <ion-badge [color]="statusColor(project.status)" class="ion-margin-top">
+            {{ ('status.' + project.status) | translate }}
+          </ion-badge>
         }
       </ion-item>
 
       <ion-item>
-        <ion-label>Created</ion-label>
+        <ion-label>{{ 'project-detail.created' | translate }}</ion-label>
         <ion-note slot="end">{{ project.created_at | date:'mediumDate' }}</ion-note>
       </ion-item>
 
       @if (project.completed_at) {
         <ion-item>
-          <ion-label>Completed</ion-label>
+          <ion-label>{{ 'project-detail.completed' | translate }}</ion-label>
           <ion-note slot="end">{{ project.completed_at | date:'mediumDate' }}</ion-note>
         </ion-item>
       }

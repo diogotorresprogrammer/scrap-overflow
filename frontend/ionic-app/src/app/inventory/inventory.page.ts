@@ -1,12 +1,15 @@
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
   IonContent, IonSpinner, IonList, IonItemSliding, IonItem, IonThumbnail,
   IonLabel, IonBadge, IonItemOptions, IonItemOption,
+  IonSelect, IonSelectOption,
   AlertController, ToastController,
 } from '@ionic/angular/standalone';
-import { ApiService, ScrapItem } from '../services/api.service';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { ApiService, ScrapItem, SortField, SortOrder } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -15,14 +18,23 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['inventory.page.scss'],
   standalone: true,
   imports: [
+    FormsModule, TranslatePipe,
     IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
     IonContent, IonSpinner, IonList, IonItemSliding, IonItem, IonThumbnail,
     IonLabel, IonBadge, IonItemOptions, IonItemOption,
+    IonSelect, IonSelectOption,
   ],
 })
 export class InventoryPage {
   items: ScrapItem[] = [];
   loading = true;
+
+  sort: SortField = 'created_at';
+  order: SortOrder = 'desc';
+  page = 1;
+  readonly perPage = 10;
+  total = 0;
+  pages = 0;
 
   constructor(
     private api: ApiService,
@@ -30,6 +42,7 @@ export class InventoryPage {
     private router: Router,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
+    private translate: TranslateService,
   ) {}
 
   ionViewWillEnter() {
@@ -38,10 +51,31 @@ export class InventoryPage {
 
   load() {
     this.loading = true;
-    this.api.getItems().subscribe({
-      next: (items) => { this.items = items; this.loading = false; },
+    this.api.getItems({ sort: this.sort, order: this.order, page: this.page, per_page: this.perPage }).subscribe({
+      next: (res) => {
+        this.items = res.items;
+        this.total = res.total;
+        this.pages = res.pages;
+        this.loading = false;
+      },
       error: () => { this.loading = false; },
     });
+  }
+
+  onSortChange() {
+    this.page = 1;
+    this.load();
+  }
+
+  toggleOrder() {
+    this.order = this.order === 'desc' ? 'asc' : 'desc';
+    this.page = 1;
+    this.load();
+  }
+
+  changePage(p: number) {
+    this.page = p;
+    this.load();
   }
 
   goToDetail(item: ScrapItem) {
@@ -50,17 +84,20 @@ export class InventoryPage {
 
   async deleteItem(item: ScrapItem) {
     const alert = await this.alertCtrl.create({
-      header: 'Delete item?',
-      message: `"${item.name}" will be permanently removed.`,
+      header: this.translate.instant('item-detail.delete-confirm-header'),
+      message: this.translate.instant('item-detail.delete-confirm-message', { name: item.name }),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Delete', role: 'destructive',
+          text: this.translate.instant('common.delete'), role: 'destructive',
           handler: () => {
             this.api.deleteItem(item.id!).subscribe({
               next: async () => {
-                this.items = this.items.filter(i => i.id !== item.id);
-                const t = await this.toastCtrl.create({ message: 'Item deleted.', duration: 1500 });
+                this.load();
+                const t = await this.toastCtrl.create({
+                  message: this.translate.instant('inventory.item-deleted'),
+                  duration: 1500,
+                });
                 await t.present();
               },
             });
@@ -73,10 +110,10 @@ export class InventoryPage {
 
   async confirmLogout() {
     const alert = await this.alertCtrl.create({
-      header: 'Sign out?',
+      header: this.translate.instant('inventory.sign-out-confirm'),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Sign out', role: 'destructive', handler: () => this.auth.logout() },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('common.sign-out'), role: 'destructive', handler: () => this.auth.logout() },
       ],
     });
     await alert.present();

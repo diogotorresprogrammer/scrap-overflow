@@ -6,39 +6,42 @@
     <div class="hero">
       <ion-icon name="construct" class="hero-icon"></ion-icon>
       <h1>Scrap Overflow</h1>
-      <p class="tagline">Inventory for salvaged lumber, metal, furniture &amp; appliances.<br>Find what you have. Use what you find.</p>
+      <p class="tagline" [innerHTML]="'landing.tagline' | translate"></p>
     </div>
 
     <!-- Auth card -->
     <ion-card class="auth-card">
 
       <ion-segment [(ngModel)]="mode" class="ion-margin-bottom">
-        <ion-segment-button value="login">Sign in</ion-segment-button>
-        <ion-segment-button value="register">Create account</ion-segment-button>
+        <ion-segment-button value="login">{{ 'landing.sign-in' | translate }}</ion-segment-button>
+        <ion-segment-button value="register">{{ 'landing.create-account' | translate }}</ion-segment-button>
       </ion-segment>
 
       @if (mode === 'register') {
         <ion-item lines="full">
-          <ion-label position="stacked">Username</ion-label>
-          <ion-input [(ngModel)]="username" type="text" autocomplete="username" placeholder="your_name"></ion-input>
+          <ion-label position="stacked">{{ 'landing.username' | translate }}</ion-label>
+          <ion-input [(ngModel)]="username" type="text" autocomplete="username"
+            [placeholder]="'landing.username-placeholder' | translate"></ion-input>
         </ion-item>
       }
 
       <ion-item lines="full">
-        <ion-label position="stacked">Email</ion-label>
-        <ion-input [(ngModel)]="email" type="email" autocomplete="email" placeholder="you@example.com"></ion-input>
+        <ion-label position="stacked">{{ 'landing.email' | translate }}</ion-label>
+        <ion-input [(ngModel)]="email" type="email" autocomplete="email"
+          [placeholder]="'landing.email-placeholder' | translate"></ion-input>
       </ion-item>
 
       <ion-item lines="none">
-        <ion-label position="stacked">Password</ion-label>
-        <ion-input [(ngModel)]="password" type="password" autocomplete="current-password" placeholder="••••••••"
+        <ion-label position="stacked">{{ 'landing.password' | translate }}</ion-label>
+        <ion-input [(ngModel)]="password" type="password" autocomplete="current-password"
+          [placeholder]="'landing.password-placeholder' | translate"
           (keyup.enter)="submit()"></ion-input>
       </ion-item>
 
       <ion-button expand="block" (click)="submit()"
         [disabled]="!email || !password || (mode === 'register' && !username)"
         class="ion-margin-top ion-margin-horizontal">
-        {{ mode === 'login' ? 'Sign in' : 'Create account' }}
+        {{ (mode === 'login' ? 'landing.sign-in' : 'landing.create-account') | translate }}
       </ion-button>
 
     </ion-card>

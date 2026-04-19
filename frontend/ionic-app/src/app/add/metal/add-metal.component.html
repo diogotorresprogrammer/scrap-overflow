@@ -1,0 +1,31 @@
+<ion-item-divider><ion-label>{{ 'add.metal-details' | translate }}</ion-label></ion-item-divider>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.metal-type' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.metal_type" [placeholder]="'item.metal-type-placeholder' | translate"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.profile' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.profile" [placeholder]="'item.profile-placeholder' | translate"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.length' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  <ion-input [(ngModel)]="item.length" type="number"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.width' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  <ion-input [(ngModel)]="item.width" type="number"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.thickness' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  <ion-input [(ngModel)]="item.thickness" type="number"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.alloy' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.alloy" [placeholder]="'item.alloy-placeholder' | translate"></ion-input>
+</ion-item>

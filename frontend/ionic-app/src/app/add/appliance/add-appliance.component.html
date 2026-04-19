@@ -1,0 +1,38 @@
+<ion-item-divider><ion-label>{{ 'add.appliance-details' | translate }}</ion-label></ion-item-divider>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.appliance-type' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.appliance_type" [placeholder]="'item.appliance-type-placeholder' | translate"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.brand' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.brand"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.model-number' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.model_number"></ion-input>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.working-condition' | translate }}</ion-label>
+  <ion-select [(ngModel)]="item.working_condition" [placeholder]="'common.select' | translate">
+    <ion-select-option value="working">{{ 'working-condition.working' | translate }}</ion-select-option>
+    <ion-select-option value="unknown">{{ 'working-condition.unknown' | translate }}</ion-select-option>
+    <ion-select-option value="for-parts">{{ 'working-condition.for-parts' | translate }}</ion-select-option>
+  </ion-select>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.voltage' | translate }}</ion-label>
+  <ion-select [(ngModel)]="item.voltage" [placeholder]="'common.select' | translate">
+    <ion-select-option [value]="110">110V</ion-select-option>
+    <ion-select-option [value]="220">220V</ion-select-option>
+  </ion-select>
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.amperage' | translate }}</ion-label>
+  <ion-input [(ngModel)]="item.amperage" type="number" placeholder="15"></ion-input>
+</ion-item>

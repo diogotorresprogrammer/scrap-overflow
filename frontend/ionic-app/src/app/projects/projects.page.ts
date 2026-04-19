@@ -7,6 +7,7 @@ import {
   IonBadge, IonItemOptions, IonItemOption,
   AlertController, ToastController,
 } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ProjectsService, Project } from '../services/projects.service';
 
 @Component({
@@ -15,7 +16,7 @@ import { ProjectsService, Project } from '../services/projects.service';
   styleUrls: ['projects.page.scss'],
   standalone: true,
   imports: [
-    DatePipe,
+    DatePipe, TranslatePipe,
     IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
     IonContent, IonSpinner, IonList, IonItemSliding, IonItem, IonLabel,
     IonBadge, IonItemOptions, IonItemOption,
@@ -30,6 +31,7 @@ export class ProjectsPage {
     private router: Router,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
+    private translate: TranslateService,
   ) {}
 
   ionViewWillEnter() { this.load(); }
@@ -48,15 +50,15 @@ export class ProjectsPage {
 
   async promptCreate() {
     const alert = await this.alertCtrl.create({
-      header: 'New project',
+      header: this.translate.instant('projects.new-project'),
       inputs: [
-        { name: 'name', placeholder: 'Project name', attributes: { required: true } },
-        { name: 'description', placeholder: 'Description (optional)' },
+        { name: 'name', placeholder: this.translate.instant('projects.project-name-placeholder'), attributes: { required: true } },
+        { name: 'description', placeholder: this.translate.instant('projects.description-optional-placeholder') },
       ],
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Create',
+          text: this.translate.instant('common.create'),
           handler: (d) => {
             if (!d.name?.trim()) return false;
             this.svc.createProject({ name: d.name.trim(), description: d.description || undefined }).subscribe({
@@ -75,17 +77,20 @@ export class ProjectsPage {
 
   async deleteProject(p: Project) {
     const alert = await this.alertCtrl.create({
-      header: 'Delete project?',
-      message: `"${p.name}" will be permanently removed.`,
+      header: this.translate.instant('projects.delete-confirm-header'),
+      message: this.translate.instant('projects.delete-confirm-message', { name: p.name }),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
         {
-          text: 'Delete', role: 'destructive',
+          text: this.translate.instant('common.delete'), role: 'destructive',
           handler: () => {
             this.svc.deleteProject(p.id!).subscribe({
               next: async () => {
                 this.projects = this.projects.filter(x => x.id !== p.id);
-                const t = await this.toastCtrl.create({ message: 'Project deleted.', duration: 1500 });
+                const t = await this.toastCtrl.create({
+                  message: this.translate.instant('projects.deleted'),
+                  duration: 1500,
+                });
                 await t.present();
               },
             });

@@ -4,6 +4,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar,
   IonList, IonItem, IonThumbnail, IonLabel, IonBadge,
 } from '@ionic/angular/standalone';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService, ScrapItem } from '../services/api.service';
 
 @Component({
@@ -12,7 +13,7 @@ import { ApiService, ScrapItem } from '../services/api.service';
   styleUrls: ['search.page.scss'],
   standalone: true,
   imports: [
-    FormsModule,
+    FormsModule, TranslatePipe,
     IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar,
     IonList, IonItem, IonThumbnail, IonLabel, IonBadge,
   ],
@@ -25,8 +26,8 @@ export class SearchPage {
   constructor(private api: ApiService) {}
 
   ionViewWillEnter() {
-    this.api.getItems().subscribe(items => {
-      this.allItems = items;
+    this.api.getItems({ per_page: 1000 }).subscribe(res => {
+      this.allItems = res.items;
       this.filter();
     });
   }

@@ -1,0 +1,25 @@
+<ion-item-divider><ion-label>{{ 'item-type.furniture' | translate }}</ion-label></ion-item-divider>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.furniture-type' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.furniture_type"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.furniture_type || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.material' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.material"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.material || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.style' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.style"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.style || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label>{{ 'item.hardware-included' | translate }}</ion-label>
+  @if (editing) { <ion-toggle [(ngModel)]="draft.has_hardware" slot="end"></ion-toggle> }
+  @else { <ion-note slot="end">{{ (item.has_hardware ? 'common.yes' : 'common.no') | translate }}</ion-note> }
+</ion-item>

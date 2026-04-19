@@ -1,49 +1,50 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Add Item</ion-title>
+    <ion-title>{{ 'add.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Add Item</ion-title>
+      <ion-title size="large">{{ 'add.title' | translate }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <div class="ion-padding">
 
     <ion-item>
-      <ion-label position="stacked">Type *</ion-label>
-      <ion-select [(ngModel)]="item.item_type" placeholder="Select type">
+      <ion-label position="stacked">{{ 'add.type' | translate }} *</ion-label>
+      <ion-select [(ngModel)]="item.item_type" [placeholder]="'common.select' | translate">
         @for (t of itemTypes; track t.value) {
-          <ion-select-option [value]="t.value">{{ t.label }}</ion-select-option>
+          <ion-select-option [value]="t.value">{{ ('item-type.' + t.value) | translate }}</ion-select-option>
         }
       </ion-select>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Name *</ion-label>
-      <ion-input [(ngModel)]="item.name" placeholder="e.g. Oak plank"></ion-input>
+      <ion-label position="stacked">{{ 'add.name' | translate }} *</ion-label>
+      <ion-input [(ngModel)]="item.name" [placeholder]="'add.name-placeholder' | translate"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Description</ion-label>
-      <ion-textarea [(ngModel)]="item.description" rows="2" placeholder="Where found, what it looks like..."></ion-textarea>
+      <ion-label position="stacked">{{ 'common.description' | translate }}</ion-label>
+      <ion-textarea [(ngModel)]="item.description" rows="2"
+        [placeholder]="'add.description-placeholder' | translate"></ion-textarea>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Condition</ion-label>
-      <ion-select [(ngModel)]="item.condition" placeholder="Select...">
-        <ion-select-option value="excellent">Excellent</ion-select-option>
-        <ion-select-option value="good">Good</ion-select-option>
-        <ion-select-option value="fair">Fair</ion-select-option>
-        <ion-select-option value="poor">Poor</ion-select-option>
+      <ion-label position="stacked">{{ 'common.condition' | translate }}</ion-label>
+      <ion-select [(ngModel)]="item.condition" [placeholder]="'common.select' | translate">
+        <ion-select-option value="excellent">{{ 'condition.excellent' | translate }}</ion-select-option>
+        <ion-select-option value="good">{{ 'condition.good' | translate }}</ion-select-option>
+        <ion-select-option value="fair">{{ 'condition.fair' | translate }}</ion-select-option>
+        <ion-select-option value="poor">{{ 'condition.poor' | translate }}</ion-select-option>
       </ion-select>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Dimension unit</ion-label>
+      <ion-label position="stacked">{{ 'add.dimension-unit' | translate }}</ion-label>
       <ion-select [(ngModel)]="item.dimension_unit">
         <ion-select-option value="mm">mm</ion-select-option>
         <ion-select-option value="cm">cm</ion-select-option>
@@ -51,124 +52,14 @@
       </ion-select>
     </ion-item>
 
-    @if (type === 'lumber') {
-      <ion-item-divider><ion-label>Lumber details</ion-label></ion-item-divider>
-      <ion-item>
-        <ion-label position="stacked">Species</ion-label>
-        <ion-input [(ngModel)]="item.species" placeholder="e.g. oak, pine, poplar"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Length ({{ item.dimension_unit }})</ion-label>
-        <ion-input [(ngModel)]="item.length" type="number" placeholder="2400"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Width ({{ item.dimension_unit }})</ion-label>
-        <ion-input [(ngModel)]="item.width" type="number" placeholder="150"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Thickness ({{ item.dimension_unit }})</ion-label>
-        <ion-input [(ngModel)]="item.thickness" type="number" placeholder="25"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Grade</ion-label>
-        <ion-input [(ngModel)]="item.grade" placeholder="e.g. #1, select, common"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label>Pressure treated</ion-label>
-        <ion-toggle [(ngModel)]="item.is_treated" slot="end"></ion-toggle>
-      </ion-item>
-    }
-
-    @if (type === 'metal') {
-      <ion-item-divider><ion-label>Metal details</ion-label></ion-item-divider>
-      <ion-item>
-        <ion-label position="stacked">Metal type</ion-label>
-        <ion-input [(ngModel)]="item.metal_type" placeholder="e.g. steel, aluminum, copper"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Profile</ion-label>
-        <ion-input [(ngModel)]="item.profile" placeholder="e.g. flat bar, tube, angle, sheet"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Length ({{ item.dimension_unit }})</ion-label>
-        <ion-input [(ngModel)]="item.length" type="number"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Width ({{ item.dimension_unit }})</ion-label>
-        <ion-input [(ngModel)]="item.width" type="number"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Thickness ({{ item.dimension_unit }})</ion-label>
-        <ion-input [(ngModel)]="item.thickness" type="number"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Alloy</ion-label>
-        <ion-input [(ngModel)]="item.alloy" placeholder="e.g. 6061, A36, 304"></ion-input>
-      </ion-item>
-    }
-
-    @if (type === 'furniture') {
-      <ion-item-divider><ion-label>Furniture details</ion-label></ion-item-divider>
-      <ion-item>
-        <ion-label position="stacked">Furniture type</ion-label>
-        <ion-input [(ngModel)]="item.furniture_type" placeholder="e.g. chair, table, dresser"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Material</ion-label>
-        <ion-input [(ngModel)]="item.material" placeholder="e.g. solid wood, metal, upholstered"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Style</ion-label>
-        <ion-input [(ngModel)]="item.style" placeholder="e.g. industrial, rustic, mid-century"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Number of pieces</ion-label>
-        <ion-input [(ngModel)]="item.num_pieces" type="number" value="1"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label>Hardware included</ion-label>
-        <ion-toggle [(ngModel)]="item.has_hardware" slot="end"></ion-toggle>
-      </ion-item>
-    }
-
-    @if (type === 'appliance') {
-      <ion-item-divider><ion-label>Appliance details</ion-label></ion-item-divider>
-      <ion-item>
-        <ion-label position="stacked">Appliance type</ion-label>
-        <ion-input [(ngModel)]="item.appliance_type" placeholder="e.g. fridge, washer, stove"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Brand</ion-label>
-        <ion-input [(ngModel)]="item.brand"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Model number</ion-label>
-        <ion-input [(ngModel)]="item.model_number"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Working condition</ion-label>
-        <ion-select [(ngModel)]="item.working_condition" placeholder="Select...">
-          <ion-select-option value="working">Working</ion-select-option>
-          <ion-select-option value="unknown">Unknown</ion-select-option>
-          <ion-select-option value="for-parts">For parts</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Voltage</ion-label>
-        <ion-select [(ngModel)]="item.voltage" placeholder="Select...">
-          <ion-select-option [value]="110">110V</ion-select-option>
-          <ion-select-option [value]="220">220V</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Amperage (A)</ion-label>
-        <ion-input [(ngModel)]="item.amperage" type="number" placeholder="15"></ion-input>
-      </ion-item>
-    }
+    @if (type === 'lumber') { <app-add-lumber [item]="item"></app-add-lumber> }
+    @if (type === 'metal') { <app-add-metal [item]="item"></app-add-metal> }
+    @if (type === 'furniture') { <app-add-furniture [item]="item"></app-add-furniture> }
+    @if (type === 'appliance') { <app-add-appliance [item]="item"></app-add-appliance> }
 
     <ion-button expand="block" fill="outline" (click)="takePhoto()" class="ion-margin-top">
       <ion-icon slot="start" name="camera-outline"></ion-icon>
-      Take Photo
+      {{ 'add.take-photo' | translate }}
     </ion-button>
 
     @if (photoUrl) {
@@ -177,12 +68,16 @@
 
     <ion-button expand="block" fill="outline" color="secondary" (click)="getLocation()">
       <ion-icon slot="start" name="location-outline"></ion-icon>
-      {{ (item.location_lat != null) ? '📍 ' + (item.location_lat | number:'1.4-4') + ', ' + (item.location_lng | number:'1.4-4') : 'Tag Location' }}
+      @if (item.location_lat != null) {
+        📍 {{ item.location_lat | number:'1.4-4' }}, {{ item.location_lng | number:'1.4-4' }}
+      } @else {
+        {{ 'add.tag-location' | translate }}
+      }
     </ion-button>
 
     <ion-button expand="block" (click)="save()" [disabled]="!item.name || saving" class="ion-margin-top">
       @if (saving) { <ion-spinner name="crescent" slot="start"></ion-spinner> }
-      {{ saving ? 'Saving...' : 'Save Item' }}
+      {{ (saving ? 'common.saving' : 'add.save-item') | translate }}
     </ion-button>
 
   </div>

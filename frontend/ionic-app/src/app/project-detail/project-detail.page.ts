@@ -8,6 +8,7 @@ import {
   IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonNote,
   AlertController, NavController, ToastController,
 } from '@ionic/angular/standalone';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ProjectsService, Project, ProjectStatus } from '../services/projects.service';
 
 @Component({
@@ -16,7 +17,7 @@ import { ProjectsService, Project, ProjectStatus } from '../services/projects.se
   styleUrls: ['project-detail.page.scss'],
   standalone: true,
   imports: [
-    FormsModule, DatePipe,
+    FormsModule, DatePipe, TranslatePipe,
     IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton,
     IonIcon, IonSpinner, IonContent, IonList, IonItem, IonLabel,
     IonInput, IonTextarea, IonSelect, IonSelectOption, IonBadge, IonNote,
@@ -29,12 +30,7 @@ export class ProjectDetailPage implements OnInit {
   saving = false;
   editing = false;
 
-  readonly statuses: { value: ProjectStatus; label: string }[] = [
-    { value: 'planning',    label: 'Planning' },
-    { value: 'in_progress', label: 'In progress' },
-    { value: 'completed',   label: 'Completed' },
-    { value: 'cancelled',   label: 'Cancelled' },
-  ];
+  readonly statuses: ProjectStatus[] = ['planning', 'in_progress', 'completed', 'cancelled'];
 
   constructor(
     private route: ActivatedRoute,
@@ -42,6 +38,7 @@ export class ProjectDetailPage implements OnInit {
     private nav: NavController,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -69,7 +66,10 @@ export class ProjectDetailPage implements OnInit {
         this.project = updated;
         this.editing = false;
         this.saving = false;
-        const t = await this.toastCtrl.create({ message: 'Saved.', duration: 1500 });
+        const t = await this.toastCtrl.create({
+          message: this.translate.instant('project-detail.saved'),
+          duration: 1500,
+        });
         await t.present();
       },
       error: () => { this.saving = false; },
@@ -78,11 +78,11 @@ export class ProjectDetailPage implements OnInit {
 
   async confirmDelete() {
     const alert = await this.alertCtrl.create({
-      header: 'Delete project?',
-      message: `"${this.project!.name}" will be permanently removed.`,
+      header: this.translate.instant('projects.delete-confirm-header'),
+      message: this.translate.instant('projects.delete-confirm-message', { name: this.project!.name }),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive', handler: () => this.delete() },
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('common.delete'), role: 'destructive', handler: () => this.delete() },
       ],
     });
     await alert.present();

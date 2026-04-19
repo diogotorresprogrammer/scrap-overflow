@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type ItemType = 'item' | 'lumber' | 'metal' | 'furniture' | 'appliance';
+export type SortField = 'created_at' | 'length' | 'item_type';
+export type SortOrder = 'asc' | 'desc';
 
 export interface ScrapItem {
   id?: string;
@@ -57,17 +59,36 @@ export interface ScrapItem {
   amperage?: number;
 }
 
+export interface ItemsParams {
+  type?: string;
+  sort?: SortField;
+  order?: SortOrder;
+  page?: number;
+  per_page?: number;
+}
+
+export interface PaginatedItems {
+  items: ScrapItem[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private base = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  getItems(filters?: { type?: string; user_id?: string }): Observable<ScrapItem[]> {
-    let params = new HttpParams();
-    if (filters?.type) params = params.set('type', filters.type);
-    if (filters?.user_id) params = params.set('user_id', filters.user_id);
-    return this.http.get<ScrapItem[]>(`${this.base}/api/items`, { params });
+  getItems(params?: ItemsParams): Observable<PaginatedItems> {
+    let p = new HttpParams();
+    if (params?.type)     p = p.set('type', params.type);
+    if (params?.sort)     p = p.set('sort', params.sort);
+    if (params?.order)    p = p.set('order', params.order);
+    if (params?.page)     p = p.set('page', String(params.page));
+    if (params?.per_page) p = p.set('per_page', String(params.per_page));
+    return this.http.get<PaginatedItems>(`${this.base}/api/items`, { params: p });
   }
 
   createItem(item: Partial<ScrapItem>): Observable<ScrapItem> {

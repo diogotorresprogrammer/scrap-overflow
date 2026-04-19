@@ -1,0 +1,32 @@
+<ion-item-divider><ion-label>{{ 'item-type.metal' | translate }}</ion-label></ion-item-divider>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.metal-type' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.metal_type"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.metal_type || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.profile' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.profile"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.profile || '—' }}</p> }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.dimensions' | translate:{ unit: item.dimension_unit } }}</ion-label>
+  @if (editing) {
+    <div style="display:flex; gap:8px; padding-top:8px;">
+      <ion-input [(ngModel)]="draft.length" type="number" placeholder="L" style="flex:1"></ion-input>
+      <ion-input [(ngModel)]="draft.width" type="number" placeholder="W" style="flex:1"></ion-input>
+      <ion-input [(ngModel)]="draft.thickness" type="number" placeholder="T" style="flex:1"></ion-input>
+    </div>
+  } @else {
+    <p class="ion-padding-top">{{ item.length }} × {{ item.width }} × {{ item.thickness }}</p>
+  }
+</ion-item>
+
+<ion-item>
+  <ion-label position="stacked">{{ 'item.alloy' | translate }}</ion-label>
+  @if (editing) { <ion-input [(ngModel)]="draft.alloy"></ion-input> }
+  @else { <p class="ion-padding-top">{{ item.alloy || '—' }}</p> }
+</ion-item>

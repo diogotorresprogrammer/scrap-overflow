@@ -1,8 +1,8 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Inventory</ion-title>
+    <ion-title>{{ 'inventory.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="confirmLogout()" title="Sign out">
+      <ion-button (click)="confirmLogout()" [title]="'common.sign-out' | translate">
         <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -12,9 +12,27 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Inventory</ion-title>
+      <ion-title size="large">{{ 'inventory.title' | translate }}</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-toolbar class="sort-bar">
+    <ion-select
+      [(ngModel)]="sort"
+      (ionChange)="onSortChange()"
+      interface="popover"
+      [label]="'inventory.sort-by' | translate"
+      labelPlacement="start">
+      <ion-select-option value="created_at">{{ 'inventory.sort-created-at' | translate }}</ion-select-option>
+      <ion-select-option value="length">{{ 'inventory.sort-length' | translate }}</ion-select-option>
+      <ion-select-option value="item_type">{{ 'inventory.sort-item-type' | translate }}</ion-select-option>
+    </ion-select>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="toggleOrder()">
+        {{ order === 'desc' ? '↓' : '↑' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 
   @if (loading) {
     <div class="ion-padding ion-text-center">
@@ -39,7 +57,9 @@
                 <p>{{ item.length }} × {{ item.width }} × {{ item.thickness }} {{ item.dimension_unit }}</p>
               }
             </ion-label>
-            <ion-badge slot="end" [color]="typeColor(item.item_type)">{{ item.item_type }}</ion-badge>
+            <ion-badge slot="end" [color]="typeColor(item.item_type)">
+              {{ ('item-type.' + item.item_type) | translate }}
+            </ion-badge>
           </ion-item>
 
           <ion-item-options side="end">
@@ -50,12 +70,20 @@
         </ion-item-sliding>
       }
     </ion-list>
+
+    @if (pages > 1) {
+      <div class="pagination-bar ion-padding">
+        <ion-button fill="outline" size="small" (click)="changePage(page - 1)" [disabled]="page <= 1">‹</ion-button>
+        <span class="page-info">{{ 'inventory.page-info' | translate:{ page: page, pages: pages } }}</span>
+        <ion-button fill="outline" size="small" (click)="changePage(page + 1)" [disabled]="page >= pages">›</ion-button>
+      </div>
+    }
   }
 
   @if (!loading && items.length === 0) {
     <div class="ion-padding ion-text-center">
       <ion-icon name="cube-outline" style="font-size: 48px; color: var(--ion-color-medium)"></ion-icon>
-      <p>No items yet. Add your first scrap!</p>
+      <p>{{ 'inventory.empty' | translate }}</p>
     </div>
   }
 </ion-content>
