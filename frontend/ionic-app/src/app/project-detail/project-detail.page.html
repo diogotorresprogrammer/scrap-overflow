@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/projects"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ project?.name ?? ('project-detail.title' | translate) }}</ion-title>
+    <ion-title>{{ project?.name ?? ('project-detail.title' | translate) }}!</ion-title>
     <ion-buttons slot="end">
       @if (!editing) {
         <ion-button (click)="startEdit()">
