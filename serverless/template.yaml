@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Scrap Overflow serverless backend
+
+Globals:
+  Function:
+    Runtime: python3.14
+    Architectures: [arm64]
+    MemorySize: 512
+    Timeout: 10
+    Environment:
+      Variables:
+        POWERTOOLS_SERVICE_NAME: scrap-overflow
+        LOG_LEVEL: INFO
+
+Resources:
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: app.lambda_handler
+      LoggingConfig:
+        LogGroup: !Ref ApiLogGroup
+      Events:
+        Health:
+          Type: Api
+          Properties:
+            Path: /health
+            Method: get
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  HealthApi:
+    Description: "API Gateway endpoint URL for Prod stage for API function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/health/"
+  ApiFunction:
+    Description: "Api Lambda Function ARN"
+    Value: !GetAtt ApiFunction.Arn
+  ApiFunctionIamRole:
+    Description: "Implicit IAM Role created for API function"
+    Value: !GetAtt ApiFunctionRole.Arn
