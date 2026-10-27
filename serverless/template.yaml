@@ -5,7 +5,8 @@ Description: Scrap Overflow serverless backend
 Globals:
   Function:
     Runtime: python3.14
-    Architectures: [arm64]
+    Architectures:
+      - arm64
     MemorySize: 512
     Timeout: 10
     Environment:
@@ -31,15 +32,65 @@ Resources:
           Properties:
             Path: /health
             Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DBTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DBTable
+  DBTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: "N"
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: GSI2
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   HealthApi:
-    Description: "API Gateway endpoint URL for Prod stage for API function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/health/"
+    Description: API Gateway endpoint URL for Prod stage for API function
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/health/
   ApiFunction:
-    Description: "Api Lambda Function ARN"
+    Description: Api Lambda Function ARN
     Value: !GetAtt ApiFunction.Arn
   ApiFunctionIamRole:
-    Description: "Implicit IAM Role created for API function"
+    Description: Implicit IAM Role created for API function
     Value: !GetAtt ApiFunctionRole.Arn
