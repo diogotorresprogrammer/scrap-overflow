@@ -32,12 +32,38 @@ Resources:
           Properties:
             Path: /health
             Method: get
+        CreateItem:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: post
+        ListItems:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: get
+        GetItem:
+          Type: Api
+          Properties:
+            Path: /items/{item_id}
+            Method: get
+        UpdateItem:
+          Type: Api
+          Properties:
+            Path: /items/{item_id}
+            Method: patch
+        DeleteItem:
+          Type: Api
+          Properties:
+            Path: /items/{item_id}
+            Method: delete
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DBTable
       Environment:
         Variables:
           TABLE_NAME: !Ref DBTable
+          DEV_MAKER_ID: m-dev
   DBTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain

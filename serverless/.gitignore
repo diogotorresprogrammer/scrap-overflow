@@ -244,3 +244,5 @@ $RECYCLE.BIN/
 .aws-sam/
 
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
+# sam local --env-vars file, tied to the dev stack
+env.json
