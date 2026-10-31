@@ -9,7 +9,7 @@ import boto3
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import APIGatewayRestResolver, Response
 from aws_lambda_powertools.event_handler.exceptions import BadRequestError, NotFoundError, ServiceError
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 
 logger = Logger()
@@ -17,12 +17,15 @@ app = APIGatewayRestResolver()
 table = boto3.resource("dynamodb").Table(os.environ["TABLE_NAME"])
 
 ITEM_PREFIX = "ITEM#"
+PROJECT_PREFIX = "PROJECT#"
 ITEM_TYPES = {"lumber", "metal", "furniture", "appliance"}
 DIMENSIONS = ("length", "width", "height")
-EDITABLE = {"name", "type", "description", *DIMENSIONS}
+ITEMS_EDITABLE = {"name", "type", "description", *DIMENSIONS}
+PROJECTS_EDITABLE = {"name", "description"}
 HIDDEN = {"PK", "SK", "GSI1PK", "GSI1SK", "GSI2PK",
           "GSI2SK", "dim_mid", "dim_min", "entity"}
 MATCHING_KEYS = ("GSI2PK", "GSI2SK", "dim_mid", "dim_min")
+PROJECT_STATUSES = ("draft", "in_progress", "finished", "archived")
 
 
 # --- Helpers ---
@@ -40,6 +43,10 @@ def item_key(maker_id: str, item_id: str) -> dict:
     return {"PK": f"MAKER#{maker_id}", "SK": f"{ITEM_PREFIX}{item_id}"}
 
 
+def project_key(maker_id: str, project_id: str) -> dict:
+    return {"PK": f"MAKER#{maker_id}", "SK": f"{PROJECT_PREFIX}{project_id}"}
+
+
 def read_json_body() -> dict:
     try:
         body = app.current_event.json_body
@@ -54,7 +61,7 @@ def read_json_body() -> dict:
 
 def parse_item_fields(body: dict, partial: bool = False) -> dict:
     """Check what the client sent. partial=True (PATCH) makes every field optional."""
-    unknown = set(body) - EDITABLE
+    unknown = set(body) - ITEMS_EDITABLE
     if unknown:
         raise BadRequestError(f"unknown fields: {', '.join(sorted(unknown))}")
 
@@ -83,6 +90,37 @@ def parse_item_fields(body: dict, partial: bool = False) -> dict:
             # None in a PATCH means "remove this dimension"
             fields[dim] = value
     return fields
+
+
+def parse_project_fields(body: dict, partial: bool = False) -> dict:
+    """Check what the client sent. partial=True (PATCH) makes every field optional."""
+    unknown = set(body) - PROJECTS_EDITABLE
+    if unknown:
+        raise BadRequestError(f"unknown fields: {', '.join(sorted(unknown))}")
+
+    fields = {}
+    if not partial or "name" in body:
+        name = body.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise BadRequestError("name is required")
+        fields["name"] = name.strip()
+    if "description" in body:
+        if not isinstance(body["description"], str):
+            raise BadRequestError("description must be text")
+        fields["description"] = body["description"]
+    return fields
+
+
+def set_expression(fields: dict) -> dict:
+    """update_item arguments that SET each field, plus modified_at, and add 1 to version."""
+    names = {f"#{k}": k for k in fields}
+    values = {f":{k}": v for k, v in fields.items()} | {":now": now_iso(), ":one": 1}
+    assignments = ", ".join(f"#{k} = :{k}" for k in fields)
+    return {
+        "UpdateExpression": f"SET {assignments}, modified_at = :now ADD version :one",
+        "ExpressionAttributeNames": names,
+        "ExpressionAttributeValues": values,
+    }
 
 
 def matching_attributes(maker_id: str, record: dict) -> dict:
@@ -151,6 +189,25 @@ def decode_cursor(cursor: str, maker_id: str, sk_prefix: str) -> dict:
     return key
 
 
+def query_page(maker_id: str, prefix: str, filter_expression=None) -> tuple[list, str | None]:
+    """One page of a maker's records of one kind, newest first."""
+    limit = parse_limit(app.current_event.get_query_string_value(name="limit", default_value="20"))
+    cursor = app.current_event.get_query_string_value(name="cursor")
+
+    query = {
+        "KeyConditionExpression": Key("PK").eq(f"MAKER#{maker_id}") & Key("SK").begins_with(prefix),
+        "ScanIndexForward": False,
+        "Limit": limit,
+    }
+    if filter_expression is not None:
+        query["FilterExpression"] = filter_expression
+    if cursor:
+        query["ExclusiveStartKey"] = decode_cursor(cursor, maker_id, prefix)
+
+    response = table.query(**query)
+    return [to_api(r) for r in response["Items"]], encode_cursor(response.get("LastEvaluatedKey"))
+
+
 # --- Routes ---
 
 @app.get("/health")
@@ -158,6 +215,7 @@ def health():
     return {"status": "ok"}
 
 
+# --- Items ---
 @app.post("/items")
 def create_item():
     maker_id = get_maker_id(app.current_event)
@@ -197,25 +255,8 @@ def get_item(item_id: str):
 
 @app.get("/items")
 def list_items():
-    maker_id = get_maker_id(app.current_event)
-    limit = parse_limit(app.current_event.get_query_string_value(
-        name="limit", default_value="20"))
-    cursor = app.current_event.get_query_string_value(name="cursor")
-
-    query = {
-        "KeyConditionExpression": Key("PK").eq(f"MAKER#{maker_id}") & Key("SK").begins_with(ITEM_PREFIX),
-        "ScanIndexForward": False,
-        "Limit": limit,
-    }
-    if cursor:
-        query["ExclusiveStartKey"] = decode_cursor(
-            cursor, maker_id, ITEM_PREFIX)
-
-    response = table.query(**query)
-    return {
-        "items": [to_api(record) for record in response["Items"]],
-        "next_cursor": encode_cursor(response.get("LastEvaluatedKey")),
-    }
+    items, next_cursor = query_page(get_maker_id(app.current_event), ITEM_PREFIX)
+    return {"items": items, "next_cursor": next_cursor}
 
 
 @app.patch("/items/<item_id>")
@@ -242,7 +283,7 @@ def update_item(item_id: str):
     try:
         table.put_item(
             Item=merged,
-            ConditionExpression="version= :seen",
+            ConditionExpression="version = :seen",
             ExpressionAttributeValues={":seen": record["version"]}
         )
     except ClientError as e:
@@ -266,6 +307,97 @@ def delete_item(item_id: str):
 
     return Response(status_code=204)
 
+# --- Projects ---
+
+
+@app.post("/projects")
+def create_project():
+    maker_id = get_maker_id(app.current_event)
+    fields = parse_project_fields(read_json_body())
+
+    project_id = str(uuid.uuid7())
+    now = now_iso()
+    record = {
+        **project_key(maker_id, project_id),
+        "entity": "project",
+        "project_id": project_id,
+        "GSI1PK": f"PROJECT#{project_id}",
+        "GSI1SK": "PROJECT",
+        "description": "",
+        **fields,
+        "status": "draft",
+        "version": 1,
+        "created_at": now,
+        "modified_at": now
+    }
+
+    table.put_item(Item=record, ConditionExpression="attribute_not_exists(PK)")
+    logger.info("project created", extra={"project_id": project_id})
+
+    return to_api(record), 201
+
+
+@app.get("/projects/<project_id>")
+def get_project(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+
+    record = table.get_item(Key=project_key(maker_id, project_id)).get("Item")
+    if record is None:
+        raise NotFoundError("project not found")
+
+    return to_api(record)
+
+
+@app.get("/projects")
+def list_projects():
+    status = app.current_event.get_query_string_value(name="status")
+    if status is not None and status not in PROJECT_STATUSES:
+        raise BadRequestError(f"status must be one of: {', '.join(PROJECT_STATUSES)}")
+
+    projects, next_cursor = query_page(
+        get_maker_id(app.current_event),
+        PROJECT_PREFIX,
+        Attr("status").eq(status) if status else None,
+    )
+    return {"projects": projects, "next_cursor": next_cursor}
+
+
+@app.patch("/projects/<project_id>")
+def update_project(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+    fields = parse_project_fields(read_json_body(), partial=True)
+    if not fields:
+        raise BadRequestError("nothing to update")
+
+    try:
+        response = table.update_item(
+            Key=project_key(maker_id, project_id),
+            ConditionExpression="attribute_exists(PK)",
+            ReturnValues="ALL_NEW",
+            **set_expression(fields),
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise NotFoundError("project not found") from None
+        raise
+    logger.info("project updated", extra={"project_id": project_id})
+    return to_api(response["Attributes"])
+
+
+@app.delete("/projects/<project_id>")
+def delete_project(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+
+    response = table.delete_item(Key=project_key(
+        maker_id, project_id), ReturnValues="ALL_OLD")
+
+    if "Attributes" not in response:
+        raise NotFoundError("project not found")
+
+    return Response(status_code=204)
+
+
+# --- Entry point ---
 
 @logger.inject_lambda_context
 def lambda_handler(event, context):

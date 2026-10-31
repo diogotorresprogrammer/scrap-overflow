@@ -32,6 +32,7 @@ Resources:
           Properties:
             Path: /health
             Method: get
+# --- Items ---
         CreateItem:
           Type: Api
           Properties:
@@ -56,6 +57,32 @@ Resources:
           Type: Api
           Properties:
             Path: /items/{item_id}
+            Method: delete
+# --- Projects ---
+        CreateProject:
+          Type: Api
+          Properties:
+            Path: /projects
+            Method: post
+        ListProjects:
+          Type: Api
+          Properties:
+            Path: /projects
+            Method: get
+        GetProject:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}
+            Method: get
+        UpdateProject:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}
+            Method: patch
+        DeleteProject:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}
             Method: delete
       Policies:
         - DynamoDBCrudPolicy:
