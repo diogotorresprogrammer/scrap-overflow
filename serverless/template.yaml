@@ -79,6 +79,21 @@ Resources:
           Properties:
             Path: /projects/{project_id}
             Method: patch
+        ChangeProjectStatus:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}/status
+            Method: post
+        PublishProject:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}/publish
+            Method: post
+        UnpublishProject:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}/publish
+            Method: delete
         DeleteProject:
           Type: Api
           Properties:

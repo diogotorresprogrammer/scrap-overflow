@@ -27,6 +27,13 @@ HIDDEN = {"PK", "SK", "GSI1PK", "GSI1SK", "GSI2PK",
 MATCHING_KEYS = ("GSI2PK", "GSI2SK", "dim_mid", "dim_min")
 PROJECT_STATUSES = ("draft", "in_progress", "finished", "archived")
 
+ALLOWED_FROM = {
+    "in_progress": ("draft", "finished"),
+    "finished": ("in_progress",),
+    "archived": ("draft", "in_progress", "finished"),
+}
+PUBLISHABLE = ("in_progress", "finished")
+
 
 # --- Helpers ---
 
@@ -114,10 +121,11 @@ def parse_project_fields(body: dict, partial: bool = False) -> dict:
 def set_expression(fields: dict) -> dict:
     """update_item arguments that SET each field, plus modified_at, and add 1 to version."""
     names = {f"#{k}": k for k in fields}
-    values = {f":{k}": v for k, v in fields.items()} | {":now": now_iso(), ":one": 1}
-    assignments = ", ".join(f"#{k} = :{k}" for k in fields)
+    values = {f":{k}": v for k, v in fields.items()} | {
+        ":now": now_iso(), ":one": 1}
+    assignments = ", ".join([f"#{k} = :{k}" for k in fields] + ["modified_at = :now"])
     return {
-        "UpdateExpression": f"SET {assignments}, modified_at = :now ADD version :one",
+        "UpdateExpression": f"SET {assignments} ADD version :one",
         "ExpressionAttributeNames": names,
         "ExpressionAttributeValues": values,
     }
@@ -191,7 +199,8 @@ def decode_cursor(cursor: str, maker_id: str, sk_prefix: str) -> dict:
 
 def query_page(maker_id: str, prefix: str, filter_expression=None) -> tuple[list, str | None]:
     """One page of a maker's records of one kind, newest first."""
-    limit = parse_limit(app.current_event.get_query_string_value(name="limit", default_value="20"))
+    limit = parse_limit(app.current_event.get_query_string_value(
+        name="limit", default_value="20"))
     cursor = app.current_event.get_query_string_value(name="cursor")
 
     query = {
@@ -255,7 +264,8 @@ def get_item(item_id: str):
 
 @app.get("/items")
 def list_items():
-    items, next_cursor = query_page(get_maker_id(app.current_event), ITEM_PREFIX)
+    items, next_cursor = query_page(
+        get_maker_id(app.current_event), ITEM_PREFIX)
     return {"items": items, "next_cursor": next_cursor}
 
 
@@ -352,7 +362,8 @@ def get_project(project_id: str):
 def list_projects():
     status = app.current_event.get_query_string_value(name="status")
     if status is not None and status not in PROJECT_STATUSES:
-        raise BadRequestError(f"status must be one of: {', '.join(PROJECT_STATUSES)}")
+        raise BadRequestError(
+            f"status must be one of: {', '.join(PROJECT_STATUSES)}")
 
     projects, next_cursor = query_page(
         get_maker_id(app.current_event),
@@ -382,6 +393,87 @@ def update_project(project_id: str):
         raise
     logger.info("project updated", extra={"project_id": project_id})
     return to_api(response["Attributes"])
+
+
+def update_project_or_explain(maker_id: str, project_id: str, refused: str, **update) -> dict:
+    """update_item on a project; a failed condition becomes 404 (missing) or 409 (refused).
+
+    `refused` is the 409 message; "{current}" in it is replaced by the project's status.
+    """
+    try:
+        response = table.update_item(
+            Key=project_key(maker_id, project_id),
+            ReturnValues="ALL_NEW",
+            ReturnValuesOnConditionCheckFailure="ALL_OLD",
+            **update,
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+            raise
+        if "Item" not in e.response:
+            raise NotFoundError("project not found") from None
+        # The record inside an error is in DynamoDB's raw format: {"status": {"S": "draft"}}
+        current = e.response["Item"]["status"]["S"]
+        raise ServiceError(409, refused.format(current=current)) from None
+    return to_api(response["Attributes"])
+
+
+@app.post("/projects/<project_id>/status")
+def change_project_status(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+    body = read_json_body()
+    unknown = set(body) - {"status"}
+    if unknown:
+        raise BadRequestError(f"unknown fields: {', '.join(sorted(unknown))}")
+    target = body.get("status")
+    if not isinstance(target, str) or target not in ALLOWED_FROM:
+        raise BadRequestError(f"status must be one of: {', '.join(ALLOWED_FROM)}")
+
+    fields = {"status": target}
+    if target == "finished":
+        fields["finished_at"] = now_iso()
+    update = set_expression(fields)
+    allowed = {f":from{i}": status for i, status in enumerate(ALLOWED_FROM[target])}
+    update["ExpressionAttributeValues"] |= allowed
+    update["ConditionExpression"] = f"#status IN ({', '.join(allowed)})"
+    if target == "archived":
+        update["UpdateExpression"] += " REMOVE published_at"
+
+    project = update_project_or_explain(
+        maker_id, project_id, f"can't move a {{current}} project to {target}", **update)
+    logger.info("project status changed", extra={"project_id": project_id, "status": target})
+    return project
+
+
+@app.post("/projects/<project_id>/publish")
+def publish_project(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+    allowed = {f":pub{i}": status for i, status in enumerate(PUBLISHABLE)}
+
+    project = update_project_or_explain(
+        maker_id, project_id, "a {current} project can't be published",
+        # if_not_exists keeps the first publication date when publishing again
+        UpdateExpression="SET published_at = if_not_exists(published_at, :now), modified_at = :now ADD version :one",
+        ConditionExpression=f"#status IN ({', '.join(allowed)})",
+        ExpressionAttributeNames={"#status": "status"},
+        ExpressionAttributeValues={":now": now_iso(), ":one": 1, **allowed},
+    )
+    logger.info("project published", extra={"project_id": project_id})
+    return project
+
+
+@app.delete("/projects/<project_id>/publish")
+def unpublish_project(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+
+    project = update_project_or_explain(
+        maker_id, project_id, "",  # attribute_exists(PK) only fails when the project is missing
+        UpdateExpression="SET modified_at = :now ADD version :one REMOVE published_at",
+        ConditionExpression="attribute_exists(PK)",
+        ExpressionAttributeValues={":now": now_iso(), ":one": 1},
+    )
+    logger.info("project unpublished", extra={"project_id": project_id})
+    return project
 
 
 @app.delete("/projects/<project_id>")
