@@ -1,20 +1,11 @@
-import json
-from dataclasses import dataclass
-from pathlib import Path
-from api import app
+def test_health_returns_ok(api):
+    status, body = api("GET", "/health")
 
-@dataclass
-class FakeLambdaContext:
-    function_name: str = "test"
-    memory_limit_in_mb: int = 128
-    invoked_function_arn: str = "arn:aws:lambda:eu-central-1:123456789012:function:test"
-    aws_request_id: str = "test-request-id"
+    assert status == 200
+    assert body == {"status": "ok"}
 
-def test_lambda_handler():
 
-    event = json.loads(Path("events/health.json").read_text())
-    ret = app.lambda_handler(event, FakeLambdaContext())
-    data = json.loads(ret["body"])
+def test_unknown_route_returns_404(api):
+    status, _ = api("GET", "/nope")
 
-    assert ret["statusCode"] == 200
-    assert data["status"] == "ok"
+    assert status == 404
