@@ -99,6 +99,17 @@ Resources:
           Properties:
             Path: /projects/{project_id}
             Method: delete
+# --- Requirements ---
+        CreateRequirements:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}/requirements
+            Method: post
+        DeleteRequirement:
+          Type: Api
+          Properties:
+            Path: /projects/{project_id}/requirements/{requirement_id}
+            Method: delete
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DBTable

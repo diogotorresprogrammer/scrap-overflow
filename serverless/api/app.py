@@ -18,10 +18,13 @@ table = boto3.resource("dynamodb").Table(os.environ["TABLE_NAME"])
 
 ITEM_PREFIX = "ITEM#"
 PROJECT_PREFIX = "PROJECT#"
+REQUIREMENT_PREFIX = "REQ#"
 ITEM_TYPES = {"lumber", "metal", "furniture", "appliance"}
 DIMENSIONS = ("length", "width", "height")
 ITEMS_EDITABLE = {"name", "type", "description", *DIMENSIONS}
 PROJECTS_EDITABLE = {"name", "description"}
+REQUIREMENTS_EDITABLE = {"label", "type", *DIMENSIONS}
+MAX_REQUIREMENTS = 25  # what one BatchWriteItem request can hold
 HIDDEN = {"PK", "SK", "GSI1PK", "GSI1SK", "GSI2PK",
           "GSI2SK", "dim_mid", "dim_min", "entity"}
 MATCHING_KEYS = ("GSI2PK", "GSI2SK", "dim_mid", "dim_min")
@@ -54,6 +57,10 @@ def project_key(maker_id: str, project_id: str) -> dict:
     return {"PK": f"MAKER#{maker_id}", "SK": f"{PROJECT_PREFIX}{project_id}"}
 
 
+def requirement_key(maker_id: str, requirement_id: str) -> dict:
+    return {"PK": f"MAKER#{maker_id}", "SK": f"{REQUIREMENT_PREFIX}{requirement_id}"}
+
+
 def read_json_body() -> dict:
     try:
         body = app.current_event.json_body
@@ -64,6 +71,20 @@ def read_json_body() -> dict:
     if not isinstance(body, dict):
         raise BadRequestError("body must be a JSON object")
     return body
+
+
+def check_type(value) -> str:
+    if not isinstance(value, str) or value not in ITEM_TYPES:
+        raise BadRequestError(
+            f"type must be one of: {', '.join(sorted(ITEM_TYPES))}")
+    return value
+
+
+def check_dimension(dim: str, value) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise BadRequestError(
+            f"{dim} must be a positive whole number of millimetres")
+    return value
 
 
 def parse_item_fields(body: dict, partial: bool = False) -> dict:
@@ -79,24 +100,39 @@ def parse_item_fields(body: dict, partial: bool = False) -> dict:
             raise BadRequestError("name is required")
         fields["name"] = name.strip()
     if not partial or "type" in body:
-        item_type = body.get("type")
-        if not isinstance(item_type, str) or item_type not in ITEM_TYPES:
-            raise BadRequestError(
-                f"type must be one of: {', '.join(sorted(ITEM_TYPES))}")
-        fields["type"] = item_type
+        fields["type"] = check_type(body.get("type"))
     if "description" in body:
         if not isinstance(body["description"], str):
             raise BadRequestError("description must be text")
         fields["description"] = body["description"]
     for dim in DIMENSIONS:
         if dim in body:
-            value = body[dim]
-            if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value <= 0):
-                raise BadRequestError(
-                    f"{dim} must be a positive whole number of millimetres")
             # None in a PATCH means "remove this dimension"
-            fields[dim] = value
+            fields[dim] = None if body[dim] is None else check_dimension(
+                dim, body[dim])
     return fields
+
+
+def parse_requirement_fields(body: dict) -> tuple[dict, int]:
+    """Check a new requirement: the fields every copy gets, and how many copies (count)."""
+    unknown = set(body) - REQUIREMENTS_EDITABLE - {"count"}
+    if unknown:
+        raise BadRequestError(f"unknown fields: {', '.join(sorted(unknown))}")
+
+    fields = {"type": check_type(body.get("type"))}
+    if "label" in body:
+        if not isinstance(body["label"], str):
+            raise BadRequestError("label must be text")
+        fields["label"] = body["label"].strip()
+    for dim in DIMENSIONS:
+        if dim in body:
+            fields[dim] = check_dimension(dim, body[dim])
+
+    count = body.get("count", 1)
+    if isinstance(count, bool) or not isinstance(count, int) or not 1 <= count <= MAX_REQUIREMENTS:
+        raise BadRequestError(
+            f"count must be a whole number from 1 to {MAX_REQUIREMENTS}")
+    return fields, count
 
 
 def parse_project_fields(body: dict, partial: bool = False) -> dict:
@@ -123,7 +159,8 @@ def set_expression(fields: dict) -> dict:
     names = {f"#{k}": k for k in fields}
     values = {f":{k}": v for k, v in fields.items()} | {
         ":now": now_iso(), ":one": 1}
-    assignments = ", ".join([f"#{k} = :{k}" for k in fields] + ["modified_at = :now"])
+    assignments = ", ".join(
+        [f"#{k} = :{k}" for k in fields] + ["modified_at = :now"])
     return {
         "UpdateExpression": f"SET {assignments} ADD version :one",
         "ExpressionAttributeNames": names,
@@ -218,7 +255,6 @@ def query_page(maker_id: str, prefix: str, filter_expression=None) -> tuple[list
 
 
 # --- Routes ---
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -317,9 +353,8 @@ def delete_item(item_id: str):
 
     return Response(status_code=204)
 
+
 # --- Projects ---
-
-
 @app.post("/projects")
 def create_project():
     maker_id = get_maker_id(app.current_event)
@@ -427,13 +462,15 @@ def change_project_status(project_id: str):
         raise BadRequestError(f"unknown fields: {', '.join(sorted(unknown))}")
     target = body.get("status")
     if not isinstance(target, str) or target not in ALLOWED_FROM:
-        raise BadRequestError(f"status must be one of: {', '.join(ALLOWED_FROM)}")
+        raise BadRequestError(
+            f"status must be one of: {', '.join(ALLOWED_FROM)}")
 
     fields = {"status": target}
     if target == "finished":
         fields["finished_at"] = now_iso()
     update = set_expression(fields)
-    allowed = {f":from{i}": status for i, status in enumerate(ALLOWED_FROM[target])}
+    allowed = {f":from{i}": status for i,
+               status in enumerate(ALLOWED_FROM[target])}
     update["ExpressionAttributeValues"] |= allowed
     update["ConditionExpression"] = f"#status IN ({', '.join(allowed)})"
     if target == "archived":
@@ -441,7 +478,8 @@ def change_project_status(project_id: str):
 
     project = update_project_or_explain(
         maker_id, project_id, f"can't move a {{current}} project to {target}", **update)
-    logger.info("project status changed", extra={"project_id": project_id, "status": target})
+    logger.info("project status changed", extra={
+                "project_id": project_id, "status": target})
     return project
 
 
@@ -467,7 +505,8 @@ def unpublish_project(project_id: str):
     maker_id = get_maker_id(app.current_event)
 
     project = update_project_or_explain(
-        maker_id, project_id, "",  # attribute_exists(PK) only fails when the project is missing
+        # attribute_exists(PK) only fails when the project is missing
+        maker_id, project_id, "",
         UpdateExpression="SET modified_at = :now ADD version :one REMOVE published_at",
         ConditionExpression="attribute_exists(PK)",
         ExpressionAttributeValues={":now": now_iso(), ":one": 1},
@@ -486,6 +525,72 @@ def delete_project(project_id: str):
     if "Attributes" not in response:
         raise NotFoundError("project not found")
 
+    return Response(status_code=204)
+
+
+# --- Requirements ---
+
+def save_requirements(maker_id: str, project_id: str, records: list[dict]) -> None:
+    record = table.get_item(Key=project_key(maker_id, project_id)).get("Item")
+    if record is None:
+        raise NotFoundError("project not found")
+
+    with table.batch_writer() as batch:
+        for rec in records:
+            batch.put_item(Item=rec)
+
+
+def delete_requirement_record(maker_id: str, project_id: str, requirement_id: str) -> None:
+    try:
+        table.delete_item(
+            Key=requirement_key(maker_id, requirement_id),
+            ConditionExpression="project_id = :project_id AND attribute_not_exists(filled_by)",
+            ExpressionAttributeValues={":project_id": project_id},
+            ReturnValuesOnConditionCheckFailure="ALL_OLD")
+    except ClientError as e:
+        if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+            raise
+        old = e.response.get("Item")
+        if old is None or old["project_id"]["S"] != project_id:
+            raise NotFoundError("requirement not found") from None
+        raise ServiceError(409, "requirement is filled; unassign its item first") from None
+
+
+@app.post("/projects/<project_id>/requirements")
+def create_requirements(project_id: str):
+    maker_id = get_maker_id(app.current_event)
+    fields, count = parse_requirement_fields(read_json_body())
+
+    now = now_iso()
+    records = []
+    for _ in range(count):
+        requirement_id = str(uuid.uuid7())
+        records.append({
+            **requirement_key(maker_id, requirement_id),
+            "GSI1PK": f"{PROJECT_PREFIX}{project_id}",
+            "GSI1SK": f"{REQUIREMENT_PREFIX}{requirement_id}",
+            "entity": "requirement",
+            "requirement_id": requirement_id,
+            "project_id": project_id,
+            "label": "",
+            **fields,
+            "version": 1,
+            "created_at": now,
+            "modified_at": now,
+        })
+
+    save_requirements(maker_id, project_id, records)
+    logger.info("requirements created", extra={
+                "project_id": project_id, "count": count})
+    return {"requirements": [to_api(record) for record in records]}, 201
+
+
+@app.delete("/projects/<project_id>/requirements/<requirement_id>")
+def delete_requirement(project_id: str, requirement_id: str):
+    delete_requirement_record(get_maker_id(
+        app.current_event), project_id, requirement_id)
+    logger.info("requirement deleted", extra={
+                "project_id": project_id, "requirement_id": requirement_id})
     return Response(status_code=204)
 
 
