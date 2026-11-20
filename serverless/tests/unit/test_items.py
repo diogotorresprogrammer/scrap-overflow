@@ -1,6 +1,6 @@
 import pytest
 
-from api import app as app_module
+import db
 
 OAK ={"name": "oak plank", "type": "lumber", "length": 22, "width": 2400, "height": 200}
 STORAGE_ATTRIBUTES = {"PK", "SK", "GSI1PK", "GSI1SK", "GSI2PK", "GSI2SK", "dim_mid", "dim_min", "entity"}
@@ -240,7 +240,7 @@ def test_update_with_stale_version_returns_409_and_keeps_the_other_save(table, a
         def get_item(self, **kwargs):
             return {"Item": dict(stale)}
 
-    monkeypatch.setattr(app_module, "table", StaleRead())
+    monkeypatch.setattr(db, "table", StaleRead())
 
     status, error = api("PATCH", f"/items/{created['item_id']}", {"width": 300})
 

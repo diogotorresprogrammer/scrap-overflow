@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,9 +20,13 @@ os.environ["TABLE_NAME"] = "unit-test-table"
 os.environ["DEV_MAKER_ID"] = "m-test"
 os.environ["POWERTOOLS_SERVICE_NAME"] = "scrap-overflow-tests"
 
-from api import app as app_module  # noqa: E402  (must come after the environment is set)
-
 SERVERLESS_DIR = Path(__file__).parents[1]
+
+# Lambda runs api/ as its top folder (`import db`, `from routes import items`); do the same here.
+sys.path.insert(0, str(SERVERLESS_DIR / "api"))
+
+import app as app_module  # noqa: E402  (must come after the environment is set)
+import db  # noqa: E402
 
 
 class _CloudFormationLoader(yaml.SafeLoader):
@@ -53,7 +58,7 @@ def table(monkeypatch):
     """A fresh in-memory DynamoDB table (moto), swapped in for the app's real one."""
     with mock_aws():
         fake = boto3.resource("dynamodb").create_table(TableName=os.environ["TABLE_NAME"], **_table_definition())
-        monkeypatch.setattr(app_module, "table", fake)
+        monkeypatch.setattr(db, "table", fake)
         yield fake
 
 
